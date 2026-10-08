@@ -1,0 +1,80 @@
+[
+  {
+    "n": 3,
+    "prompt": "Edit the supplied bedroom illustration for use as a layered game background. Preserve the exact 3:2 camera, border, character identity and anatomy, lamp, laptop, desk, chair, books, cables, racks, bed, colours, ink outlines and gouache texture. Remove ONLY the separately purchased cooling appliances: any desk fan, freestanding portable air conditioner and its exhaust hose, and any large overhead flexible extractor duct. Reconstruct the surfaces hidden behind these removed objects convincingly. Ordinary cooling fans inside computer cases remain. Keep the window fully closed, retain moonlight and city view. Do not add any equipment, signs, text, lettering or labels. This background must look identical in composition and lighting with those cooling appliances absent. Detailed scruffy ink/gouache cartoon, not photorealistic, not geometric. One full scene, same dimensions and perspective.",
+    "referenced_image_paths": [
+      "C:/Users/asphy/Documents/Codex/2026-10-07/le/outputs/bedroom-agi/art/originals/room-3.png"
+    ],
+    "transparent_background": false
+  },
+  {
+    "n": 4,
+    "prompt": "Edit the supplied bedroom illustration for use as a layered game background. Preserve the exact 3:2 camera, border, character identity and anatomy, lamp, laptop, desk, chair, books, cables, racks, bed, colours, ink outlines and gouache texture. Remove ONLY the separately purchased cooling appliances: any desk fan, freestanding portable air conditioner and its exhaust hose, and any large overhead flexible extractor duct. Reconstruct the surfaces hidden behind these removed objects convincingly. Ordinary cooling fans inside computer cases remain. Keep the window fully closed, retain moonlight and city view. Do not add any equipment, signs, text, lettering or labels. This background must look identical in composition and lighting with those cooling appliances absent. Detailed scruffy ink/gouache cartoon, not photorealistic, not geometric. One full scene, same dimensions and perspective.",
+    "referenced_image_paths": [
+      "C:/Users/asphy/Documents/Codex/2026-10-07/le/outputs/bedroom-agi/art/originals/room-4.png"
+    ],
+    "transparent_background": false
+  },
+  {
+    "n": 5,
+    "prompt": "Edit the supplied bedroom illustration for use as a layered game background. Preserve the exact 3:2 camera, border, character identity and anatomy, lamp, laptop, desk, chair, books, cables, racks, bed, colours, ink outlines and gouache texture. Remove ONLY the separately purchased cooling appliances: any desk fan, freestanding portable air conditioner and its exhaust hose, and any large overhead flexible extractor duct. Reconstruct the surfaces hidden behind these removed objects convincingly. Ordinary cooling fans inside computer cases remain. Keep the window fully closed, retain moonlight and city view. Do not add any equipment, signs, text, lettering or labels. This background must look identical in composition and lighting with those cooling appliances absent. Detailed scruffy ink/gouache cartoon, not photorealistic, not geometric. One full scene, same dimensions and perspective.",
+    "referenced_image_paths": [
+      "C:/Users/asphy/Documents/Codex/2026-10-07/le/outputs/bedroom-agi/art/originals/room-5.png"
+    ],
+    "transparent_background": false
+  },
+  {
+    "n": 0,
+    "kind": "window",
+    "prompt": "Edit ONLY the bedroom window in this supplied illustration. Preserve the exact entire frame, dimensions, camera and all other pixels as closely as possible: character, furniture, lamps, computer screens, city, moon, plant and curtains remain unchanged. Open the window's right-hand glass casement inward at a clearly visible angle, with its dark wooden frame and glass drawn in the same textured ink and gouache style. The existing exterior window frame stays exactly in place. A small cool-blue draft is suggested by the curtain lifting slightly just beside the window; no abstract magic effects. Do not change the room lighting, character, anatomy or machinery. Do not add text, lettering, extra appliances, new scenery or UI. Output the entire original 3:2 room, with only the open-window area changed, so it can be composited as a local window patch.",
+    "referenced_image_paths": [
+      "C:/Users/asphy/Documents/Codex/2026-10-07/le/outputs/bedroom-agi/art/originals/room-0.png"
+    ],
+    "transparent_background": false
+  },
+  {
+    "n": 1,
+    "kind": "window",
+    "prompt": "Edit ONLY the bedroom window in this supplied illustration. Preserve the exact entire frame, dimensions, camera and all other pixels as closely as possible: character, furniture, lamps, computer screens, city, moon, plant and curtains remain unchanged. Open the window's right-hand glass casement inward at a clearly visible angle, with its dark wooden frame and glass drawn in the same textured ink and gouache style. The existing exterior window frame stays exactly in place. A small cool-blue draft is suggested by the curtain lifting slightly just beside the window; no abstract magic effects. Do not change the room lighting, character, anatomy or machinery. Do not add text, lettering, extra appliances, new scenery or UI. Output the entire original 3:2 room, with only the open-window area changed, so it can be composited as a local window patch.",
+    "referenced_image_paths": [
+      "C:/Users/asphy/Documents/Codex/2026-10-07/le/outputs/bedroom-agi/art/originals/room-1.png"
+    ],
+    "transparent_background": false
+  },
+  {
+    "n": 2,
+    "kind": "window",
+    "prompt": "Edit ONLY the bedroom window in this supplied illustration. Preserve the exact entire frame, dimensions, camera and all other pixels as closely as possible: character, furniture, lamps, computer screens, city, moon, plant and curtains remain unchanged. Open the window's right-hand glass casement inward at a clearly visible angle, with its dark wooden frame and glass drawn in the same textured ink and gouache style. The existing exterior window frame stays exactly in place. A small cool-blue draft is suggested by the curtain lifting slightly just beside the window; no abstract magic effects. Do not change the room lighting, character, anatomy or machinery. Do not add text, lettering, extra appliances, new scenery or UI. Output the entire original 3:2 room, with only the open-window area changed, so it can be composited as a local window patch.",
+    "referenced_image_paths": [
+      "C:/Users/asphy/Documents/Codex/2026-10-07/le/outputs/bedroom-agi/art/originals/room-2.png"
+    ],
+    "transparent_background": false
+  },
+  {
+    "n": 3,
+    "kind": "window",
+    "prompt": "Edit ONLY the bedroom window in this supplied illustration. Preserve the exact entire frame, dimensions, camera and all other pixels as closely as possible: character, furniture, lamps, computer screens, city, moon, plant and curtains remain unchanged. Open the window's right-hand glass casement inward at a clearly visible angle, with its dark wooden frame and glass drawn in the same textured ink and gouache style. The existing exterior window frame stays exactly in place. A small cool-blue draft is suggested by the curtain lifting slightly just beside the window; no abstract magic effects. Do not change the room lighting, character, anatomy or machinery. Do not add text, lettering, extra appliances, new scenery or UI. Output the entire original 3:2 room, with only the open-window area changed, so it can be composited as a local window patch.",
+    "referenced_image_paths": [
+      "C:\\Users\\asphy\\.codex\\generated_images\\01a117dd-3493-7100-8836-5c99a7fba942\\exec-0a1fe920-e31f-450d-8891-ee4d6d2ee279.png"
+    ],
+    "transparent_background": false
+  },
+  {
+    "n": 4,
+    "kind": "window",
+    "prompt": "Edit ONLY the bedroom window in this supplied illustration. Preserve the exact entire frame, dimensions, camera and all other pixels as closely as possible: character, furniture, lamps, computer screens, city, moon, plant and curtains remain unchanged. Open the window's right-hand glass casement inward at a clearly visible angle, with its dark wooden frame and glass drawn in the same textured ink and gouache style. The existing exterior window frame stays exactly in place. A small cool-blue draft is suggested by the curtain lifting slightly just beside the window; no abstract magic effects. Do not change the room lighting, character, anatomy or machinery. Do not add text, lettering, extra appliances, new scenery or UI. Output the entire original 3:2 room, with only the open-window area changed, so it can be composited as a local window patch.",
+    "referenced_image_paths": [
+      "C:\\Users\\asphy\\.codex\\generated_images\\01a117dd-3493-7100-8836-5c99a7fba942\\exec-c3a5c3a6-8d4b-4590-ace6-272f2ffa02e1.png"
+    ],
+    "transparent_background": false
+  },
+  {
+    "n": 5,
+    "kind": "window",
+    "prompt": "Edit ONLY the bedroom window in this supplied illustration. Preserve the exact entire frame, dimensions, camera and all other pixels as closely as possible: character, furniture, lamps, computer screens, city, moon, plant and curtains remain unchanged. Open the window's right-hand glass casement inward at a clearly visible angle, with its dark wooden frame and glass drawn in the same textured ink and gouache style. The existing exterior window frame stays exactly in place. A small cool-blue draft is suggested by the curtain lifting slightly just beside the window; no abstract magic effects. Do not change the room lighting, character, anatomy or machinery. Do not add text, lettering, extra appliances, new scenery or UI. Output the entire original 3:2 room, with only the open-window area changed, so it can be composited as a local window patch.",
+    "referenced_image_paths": [
+      "C:\\Users\\asphy\\.codex\\generated_images\\01a117dd-3493-7100-8836-5c99a7fba942\\exec-f6dc708b-9323-4793-b4ed-e621f79214de.png"
+    ],
+    "transparent_background": false
+  }
+]

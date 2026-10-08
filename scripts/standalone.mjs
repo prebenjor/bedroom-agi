@@ -14,12 +14,13 @@ function inlineArtwork(js){
   // also work there, as well as in builds with direct asset path strings.
   js=js.replaceAll(relative,JSON.stringify(data)).replaceAll(urlArgument,JSON.stringify(data));
  }
- if(/room-\d[^"'()\s]*\.webp/.test(js))throw new Error('Unembedded bedroom artwork in standalone build.');
+ if(/["'][^"'\s]+\.webp["']/.test(js))throw new Error('Unembedded artwork in standalone build.');
  return js;
 }
 html=html.replace(/<script[^>]*src="([^"]+)"[^>]*><\/script>/g,(_,src)=>`<script type="module">${inlineArtwork(fs.readFileSync(path.join(root,'dist',src),'utf8')).replace(/<\/script/gi,'<\\/script')}</script>`);
 html=html.replace(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g,(_,src)=>`<style>${fs.readFileSync(path.join(root,'dist',src),'utf8')}</style>`);
 html=html.replace(/href="\.\/favicon.svg"/g,`href="data:image/svg+xml,${encodeURIComponent(fs.readFileSync(path.join(root,'public/favicon.svg'),'utf8'))}"`);
+if(Buffer.byteLength(html)>8*1024*1024)throw new Error('Standalone game exceeds the 8MB artwork budget.');
 fs.writeFileSync(path.join(root,'..','Bedroom AGI.html'),html);
 fs.mkdirSync(path.join(root,'docs'),{recursive:true});
 fs.writeFileSync(path.join(root,'docs/index.html'),html);

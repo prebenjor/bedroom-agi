@@ -10,7 +10,7 @@ Open **Bedroom AGI.html** from the parent folder in a current desktop browser. I
 
 Generate two articles, then buy automatic production for $25. After that, check in every few minutes. Businesses and models unlock as the run earns money. Model costs are paid when jobs start; revenue arrives when they finish. Hardware and upgrades are separate purchases.
 
-Pick a model in **Models**, buy a rig in **Hardware**, and install **SlopClaw** to add workers and routing. Each local worker reserves VRAM. Quantization halves the requirement when a model cannot fit, but cuts its payout by 18%. Temperatures above 65°C slow new local jobs; cooling upgrades bring the temperature down.
+Tap the business or model name to change the next job. **View rig** opens hardware, cooling and quantization. **Agents** appears when SlopClaw becomes available and lets you add workers and choose routing. Each local worker reserves VRAM. Quantization halves the requirement when a model cannot fit, but cuts its payout by 18%. Temperatures above 65°C slow new local jobs; cooling upgrades bring the temperature down.
 
 **Funding** resets the operation and awards Unjustified Valuation. Permanent production perks work immediately; starting equipment perks take effect at the next reset. Three rounds finish the story, and you can keep playing afterward.
 
@@ -21,7 +21,7 @@ The reference player checks in every three minutes, makes two starting jobs, the
 - Autosaves in your browser every ten seconds and after purchases. Offline production counts up to two hours, using the same simulation.
 - Use the gear button to export/import saves, toggle sound, reduce motion, or reset progress. Import and reset require confirmation.
 - Saves belong to the browser and origin where you play. Export before moving the HTML file or changing browser. Browsers may restrict storage for local files or private sessions; the game shows a warning if saving fails.
-- Use Tab to navigate. Use left/right arrows to change desktop tabs when focused. **F** toggles fullscreen; **Esc** closes dialogs or exits fullscreen.
+- Use Tab to navigate. **F** toggles fullscreen; **Esc** closes the current drawer or dialog, returning focus to its opener.
 - All models, prices, performance, and executive dialogue are fictional satire.
 
 ## Source and development
@@ -60,10 +60,12 @@ Saves stay in each browser's local storage. To move an existing desktop or local
 
 `src/engine.ts` owns the simulation and typed actions, `src/content.ts` holds balance and writing, `src/save.ts` validates saves and elapsed time, and `src/room.ts` draws the room. `window.advanceTime(ms)` and `window.render_game_to_text()` support deterministic browser testing.
 
-Tests cover purchases, automation, job snapshots, VRAM, heat, routing, recovery, resets, save validation, fractional ticks, clock changes, offline equivalence, and pacing. Browser QA also exercises tabs, import/export, all three raises, ending/free play, reloads, keyboard controls, mobile layout, reset confirmations, and the standalone file. `npm run test:art` checks all six images, stage descriptions, reduced motion, mobile aspect ratio, failed-image recovery and embedded offline artwork.
+Tests cover purchases, automation, job snapshots, VRAM, heat, routing, recovery, resets, save validation, fractional ticks, clock changes, offline equivalence, and pacing. Browser QA also exercises drawers, stable focus and scroll, import/export, all three raises, ending/free play, reloads, keyboard controls, mobile layout, reset confirmations, and the standalone file. `npm run test:art` checks all six images, stage descriptions, reduced motion, mobile aspect ratio, failed-image recovery and embedded offline artwork.
 
 To repeat browser QA, run `npx playwright install chromium`, start `npm run preview` in one terminal, and run `npm run test:browser` in another. Screenshots go into `.qa/`. Set `BEDROOM_BROWSER` to an existing compatible Chromium executable to use it instead of downloading a browser.
 
-Content: eight models, six GPU rigs, four businesses, 24 upgrades, nine harness upgrades, twelve permanent perks, forty events, and sixty production logs. The six bedroom illustrations were made with the built-in imagegen tool and are rendered locally with subtle light effects. Original PNGs and the exact prompt set are included in `art/`; compressed images used by the game are in `src/assets/`. There are no external image requests, fonts, or tracking.
+Content: eight models, six GPU rigs, four businesses, 24 upgrades, nine harness upgrades, twelve permanent perks, forty events, and sixty production logs. The six bedroom illustrations, fifteen model/hardware/SlopClaw icons and reactive equipment artwork were made with the built-in imagegen tool. Cooling purchases add equipment, opening the window changes its illustration, and SlopClaw adds a desk object and one to four terminal panes. Original PNGs and exact prompt sets are included in `art/`; compressed runtime images are in `src/assets/`. There are no external image requests, fonts, or tracking.
+
+The main production screen uses a shared details drawer rather than desktop tabs. Controls remain mounted while values update, preserving focus and scroll. Suggestions estimate new-job earnings after purchase spending; current jobs retain their original terms. UI and artwork state stay separate from the unchanged version-1 game save. Reduced motion freezes effects and applies purchases without fades. Failed optional artwork does not disable purchased upgrades.
 
 The art and satire overhaul preserves the original economy, content IDs and save format. Corporate announcements and executive dialogue are fictional satire, not quotations or reporting. The jokes target layoffs sold as progress, unpaid creative work, environmental costs and the player profiting from the arrangement. Instructions and numeric costs remain literal. Existing save histories retain their earlier log entries; new events and production use the revised writing.

@@ -1,0 +1,132 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "transparent_background": true,
+  "assets": [
+    {
+      "id": "starter",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game model icon. Subject: a battered cream enamel speech bubble badge, a tiny old charcoal laptop folded into its base, small amber power light, friendly cheap free-browser-tool feeling, no letters. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered emblem only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-starter.png"
+    },
+    {
+      "id": "gemini",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game model icon. Subject: a glossy four-point cosmic star badge split into cobalt blue and golden amber enamel, slightly chipped on one point, manufactured optimistic tech branding, completely original fictional emblem, no recognizable official logo. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered emblem only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-gemini.png"
+    },
+    {
+      "id": "gpt",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game model icon. Subject: an original invented corporate badge: three overlapping dark pine-green mechanical loops around a tiny warm amber central dot, worn brass rim, glossy reassuring finish over scuffed cheap metal, not the real OpenAI logo. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered emblem only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-gpt.png"
+    },
+    {
+      "id": "claude",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game model icon. Subject: a rust-orange ceramic sunburst medallion with a thick cream center and only eight bold blunt uneven rays, tiny dark amber center lamp, calm expensive safety-branded product personality, an original fictional emblem not an official logo. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered emblem only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-claude.png"
+    },
+    {
+      "id": "grok",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game model icon. Subject: a chunky black steel comet badge, one white slanted crescent blade through it with a tiny electric-red spark at the tip, scuffed dark metal, loud rebellious corporate gadget feeling, original invented emblem, no real logos. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered emblem only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-grok.png"
+    },
+    {
+      "id": "local-7b",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game model icon. Subject: a small olive-green homemade local-computer-model module, a palm-size squat metal box with one large cream circular cooling grille and two amber status dots, rubber feet, thick simple carrying loop on top, no letters or digits. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered emblem only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-local-7b.png"
+    },
+    {
+      "id": "local-14b",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game icon. Subject: a medium olive-green homemade local-computer-model module from the same family as a squat metal box with cream round cooling grilles, now two stacked thick olive metal modules with two large cream circular fan grilles vertically arranged, a wide woven carrying loop over the top, two amber status dots, scuffed practical paint, no letters or digits. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered object only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-local-14b.png"
+    },
+    {
+      "id": "local-70b",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game icon. Subject: an absurdly bulky olive-green homemade local-computer-model module from the same family as small battered olive metal boxes with cream round cooling grilles: four thick stacked modules in a cumbersome tall suitcase chassis, four large cream circular grilles in a 2 by 2 grid, an overstrained thick woven carrying loop at top, two dangling black cables and amber status dots, no letters or digits. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered object only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-local-70b.png"
+    },
+    {
+      "id": "slopclaw",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser game icon. Subject: a chunky red mechanical USB-powered claw with three articulated grasping pincers and visible little brass hinge bolts, made from cheap repurposed computer parts, squat charcoal base, one short curved black USB cable, subtly ridiculous household automation gadget rather than animal, clean iconic silhouette. Style: textured hand-drawn pen-and-ink contours and painted gouache, matching a detailed warm-lit cluttered bedroom illustration, worn practical materials, muted ink blacks, warm amber highlights from front-left and subtle cool blue right rim. Composition: one centered object only, strong readable silhouette at 48 pixels, fills about 80% of square canvas, slightly above-front three-quarter angle. Transparent background, no floor or scene, no lettering, words, numbers, watermark, surrounding frame or extra objects. Preserve clean alpha edges; avoid microscopic details and geometric vector-art smoothness.",
+      "original": "originals/icon-slopclaw.png"
+    },
+    {
+      "id": "used",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser idle-game hardware icon. Subject: one very battered short used graphics card, single large black fan in a chipped cream metal shroud, dark olive circuit board edge and brass connector visible, small bent metal bracket, modest squat rectangular silhouette. Style: hand-drawn pen-and-ink contours with textured painted gouache, worn practical materials like equipment in a warm-lamplit messy bedroom, no glossy photorealism. Lighting amber from upper left, subtle cool blue edge on right. Composition: centered single isolated hardware item viewed slightly from above and front-left, all edges and entire object inside canvas with 8% clear margin, large readable silhouette at 48px, simple obvious fan circles. Transparent background, no floor or large cast shadow, no labels, lettering, digits, watermark, branding, additional scene or people.",
+      "original": "originals/icon-used.png"
+    },
+    {
+      "id": "mid",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser idle-game hardware icon. Subject: one inexpensive medium-sized graphics card, two big black cooling fans in a scuffed olive-gray rectangular shroud, brass connector visible along bottom, chunky cream corner plates, practical used bargain hardware, clear compact horizontal silhouette. Style: hand-drawn pen-and-ink contours with textured painted gouache, worn practical materials like equipment in a warm-lamplit messy bedroom, no glossy photorealism. Lighting amber from upper left, subtle cool blue edge on right. Composition: centered single isolated hardware item viewed slightly from above and front-left, all edges and entire object inside canvas with 8% clear margin, large readable silhouette at 48px, simple obvious fan circles. Transparent background, no floor or large cast shadow, no labels, lettering, digits, watermark, branding, additional scene or people.",
+      "original": "originals/icon-mid.png"
+    },
+    {
+      "id": "good",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL small browser idle-game hardware icon. Subject: one sturdy graphics card with three broad black cooling fans, a charcoal-gray heavy rectangular shroud and warm brushed brass end panels, robust purposeful mid-size hardware, visible brass connector edge. Style: hand-drawn pen-and-ink contours with textured painted gouache, worn practical materials like equipment in a warm-lamplit messy bedroom, no glossy photorealism. Lighting amber from upper left, subtle cool blue edge on right. Composition: centered single isolated hardware item viewed slightly from above and front-left, all edges and entire object inside canvas with 8% clear margin, large readable silhouette at 48px, simple obvious fan circles. Transparent background, no floor or large cast shadow, no labels, lettering, digits, watermark, branding, additional scene or people.",
+      "original": "originals/icon-good.png"
+    },
+    {
+      "id": "fan",
+      "kind": "prop",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT sprite composited into existing drawn bedroom. Subject: a small battered dark olive tabletop electric desk fan, round wire cage with three broad cream blades, short pedestal and flat oval metal foot, one short cord tucked beside base. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware, warm amber desk light upper-left and cool faint blue moonlight right. Camera slightly above and front-left, convincing furniture perspective, entire object with a little clear margin. Only this one isolated object; genuine transparent empty pixels around it and through any holes. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment. Small soft contact shadow only immediately beneath object if needed. No lettering, logos, numbers, watermark or other objects. Keep bold enough to remain readable at small room display sizes.",
+      "original": "originals/prop-fan.png"
+    },
+    {
+      "id": "case-fans",
+      "kind": "prop",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT sprite composited into existing drawn bedroom. Subject: an attachable upright rectangular metal module holding two broad black computer case cooling fans vertically stacked, scratched gunmetal frame, simple corner screw brackets, one short loose cable. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware, warm amber desk light upper-left and cool faint blue moonlight right. Camera slightly above and front-left, convincing furniture perspective, entire object with a little clear margin. Only this one isolated object; genuine transparent empty pixels around it and through any holes. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment. Small soft contact shadow only immediately beneath object if needed. No lettering, logos, numbers, watermark or other objects. Keep bold enough to remain readable at small room display sizes.",
+      "original": "originals/prop-case-fans.png"
+    },
+    {
+      "id": "ac",
+      "kind": "prop",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT sprite composited into existing drawn bedroom. Subject: one small cream portable air conditioner on four tiny wheels, front rectangular horizontal black vent, square solid casing with worn beige plastic, a short wide ribbed gray exhaust hose curling up and to the right, all within frame. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware, warm amber desk light upper-left and cool faint blue moonlight right. Camera slightly above and front-left, convincing furniture perspective, entire object with a little clear margin. Only this one isolated object; genuine transparent empty pixels around it and through any holes. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment. Small soft contact shadow only immediately beneath object if needed. No lettering, logos, numbers, watermark or other objects. Keep bold enough to remain readable at small room display sizes.",
+      "original": "originals/prop-ac.png"
+    },
+    {
+      "id": "liquid",
+      "kind": "prop",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT sprite composited into existing drawn bedroom. Subject: one compact external computer liquid-cooling assembly: a narrow upright charcoal radiator frame, small cylindrical glass reservoir visibly filled with muted amber coolant, two thick dark rubber hoses forming a short complete connected loop with brass couplings, hardware all held by a simple olive bracket, not a whole PC. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware, warm amber desk light upper-left and cool faint blue moonlight right. Camera slightly above and front-left, convincing furniture perspective, entire object with a little clear margin. Only this one isolated object; genuine transparent empty pixels around it and through any holes. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment. Small soft contact shadow only immediately beneath object if needed. No lettering, logos, numbers, watermark or other objects. Keep bold enough to remain readable at small room display sizes.",
+      "original": "originals/prop-liquid.png"
+    },
+    {
+      "id": "extractor",
+      "kind": "prop",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT sprite composited into existing drawn bedroom. Subject: one small industrial ventilation extractor assembly: galvanized metal square housing with one large dark round fan opening, short thick ribbed gray duct bent up and to the right ending in a round mouth, four simple mounting brackets, worn practical bedroom-scale hardware. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware, warm amber desk light upper-left and cool faint blue moonlight right. Camera slightly above and front-left, convincing furniture perspective, entire object with a little clear margin. Only this one isolated object; genuine transparent empty pixels around it and through any holes. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment. Small soft contact shadow only immediately beneath object if needed. No lettering, logos, numbers, watermark or other objects. Keep bold enough to remain readable at small room display sizes.",
+      "original": "originals/prop-extractor.png"
+    },
+    {
+      "id": "claw",
+      "kind": "prop",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT sprite composited into existing drawn bedroom. Subject: one tabletop red mechanical USB-powered claw with three articulated grasping pincers and visible brass hinge bolts, assembled from cheap repurposed computer parts, squat charcoal base and short curved black USB cable, household agent automation gadget, whole claw and base shown. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware, warm amber desk light upper-left and cool faint blue moonlight right. Camera slightly above and front-left, convincing furniture perspective, entire object with a little clear margin. Only this one isolated object; genuine transparent empty pixels around it and through any holes. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment. Small soft contact shadow only immediately beneath object if needed. No lettering, logos, numbers, watermark or other objects. Keep bold enough to remain readable at small room display sizes.",
+      "original": "originals/prop-claw.png"
+    },
+    {
+      "id": "big",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT small browser game hardware icon. Subject: one absurdly thick high-end graphics card with three huge black fans and a deep chunky charcoal shroud, heavy brass heatsink edge, a red warning-colored power socket with no label, intimidating oversized single-card rectangular silhouette. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware matching equipment in a warm-lit cluttered bedroom. Warm amber lighting upper-left, subtle cool blue right edge. One centered isolated entire object with 8% clear margin, slightly above and front-left perspective, recognizable simple silhouette at 48px. Genuine transparent empty pixels around it. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment and NO large shadow. No lettering, logos, digits, labels, watermark or other objects.",
+      "original": "originals/icon-big.png"
+    },
+    {
+      "id": "double",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT small browser game hardware icon. Subject: one compact open desktop computer rig built around TWO distinct thick dark graphics cards side by side in an olive metal carrying frame, visible broad cream cooling fans, two short bundled black power cables, no monitor or accessories. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware matching equipment in a warm-lit cluttered bedroom. Warm amber lighting upper-left, subtle cool blue right edge. One centered isolated entire object with 8% clear margin, slightly above and front-left perspective, recognizable simple silhouette at 48px. Genuine transparent empty pixels around it. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment and NO large shadow. No lettering, logos, digits, labels, watermark or other objects.",
+      "original": "originals/icon-double.png"
+    },
+    {
+      "id": "rack",
+      "kind": "icon",
+      "prompt": "Use case: stylized-concept. Asset type: INDIVIDUAL TRANSPARENT small browser game hardware icon. Subject: one narrow tall bedroom server rack with four broad stacked olive-and-charcoal server drawers, each a simple dark grille and two small amber status dots, open rectangular iron uprights, tiny caster wheels, bundled black cable down one side, no surrounding equipment. Hand-drawn textured ink contours and matte gouache paint, worn everyday hardware matching equipment in a warm-lit cluttered bedroom. Warm amber lighting upper-left, subtle cool blue right edge. One centered isolated entire object with 8% clear margin, slightly above and front-left perspective, recognizable simple silhouette at 48px. Genuine transparent empty pixels around it. Absolutely NO background painting, NO brown/black backdrop or glow cloud, NO vignette, NO gradient, NO floor plane, NO environment and NO large shadow. No lettering, logos, digits, labels, watermark or other objects.",
+      "original": "originals/icon-rack.png"
+    }
+  ]
+}
