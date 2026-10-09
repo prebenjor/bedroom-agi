@@ -21,7 +21,7 @@ export function codingUnlock(s:GameState,id:string){const job=CODING_JOBS.find(j
 export function roleQuote(s:GameState,role:CodingRole,a:RoleAssignment,context=0){
  const model=MODELS.find(m=>m.id===a.model),revision=revisionMetrics(s,a.model,a.revision),access=modelAccess(s,a.model,a.access);
  let reason='';
- if(role==='reviewer'&&(!s.claw||!has(s,'supervisor')))reason='Install SlopClaw and Supervisor to assign an optional reviewer.';
+ if(role==='reviewer'&&(!s.claw||!has(s,'supervisor')))reason='Install SlopClaw and Code review to assign a reviewer.';
  else if(!model||model.tier==='visual')reason='Choose a text model for this role.';
  else if(s.runEarned<model.unlock)reason=`Model unlocks at $${model.unlock.toLocaleString()} earned.`;
  else if(a.access&&a.access!==access)reason='Choose the matching local or cloud access.';
