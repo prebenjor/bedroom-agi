@@ -1,0 +1,40 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "transparent_background": true,
+  "references": [
+    "src/assets/icons/starter.webp",
+    "src/assets/icons/deepseek.webp"
+  ],
+  "assets": [
+    {
+      "id": "bug-fixes",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: a worn green toolkit opened around a brass wrench tightening a little mechanical bug; the bug is a simple rounded faulty machine with four short legs, not a living insect. Clear helpful repair job symbol.",
+      "original": "originals/bug-fixes.png"
+    },
+    {
+      "id": "small-scripts",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: a compact hand-cranked brass automation machine with a single cream paper ribbon passing through green rollers. The paper has no writing. Useful small coding script job symbol.",
+      "original": "originals/small-scripts.png"
+    },
+    {
+      "id": "data-imports",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: two cream filing trays, one neat brass funnel between them feeding simple blank green data cards into an orderly drawer. Useful data import job symbol.",
+      "original": "originals/data-imports.png"
+    },
+    {
+      "id": "websites",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: a small worn green desktop monitor showing a warm cream browser-like composition with three chunky blank coloured blocks and a little brass globe at its base. No text or symbols that resemble writing. Website coding job symbol.",
+      "original": "originals/websites.png"
+    },
+    {
+      "id": "internal-tools",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: a compact handmade green console with three chunky brass switches and a simple cream gauge, orderly and practical rather than a spaceship; a small wooden clipboard with three blank square marks rests against it. Useful internal business tool symbol.",
+      "original": "originals/internal-tools.png"
+    },
+    {
+      "id": "repository-migrations",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: two sturdy small filing cabinets, one battered wood and one green metal, linked by a short brass bridge with a single stack of blank folders halfway across. Useful code repository migration symbol.",
+      "original": "originals/repository-migrations.png"
+    }
+  ]
+}

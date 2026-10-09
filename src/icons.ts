@@ -1,3 +1,8 @@
+import tier0 from './assets/icons/claude-fable.webp';
+import tier1 from './assets/icons/gemini-flash.webp';
+import tier2 from './assets/icons/grok-murmur.webp';
+import tier3 from './assets/icons/grok-meltdown.webp';
+import tier4 from './assets/icons/deepseek-overthink.webp';
 import starter from './assets/icons/starter.webp';
 import gemini from './assets/icons/gemini.webp';
 import gpt from './assets/icons/gpt.webp';
@@ -23,4 +28,4 @@ import sora from './assets/icons/sora.webp';
 import local32 from './assets/icons/local-32b.webp';
 
 /** Generated raster artwork. Names, specifications and prices stay in HTML. */
-export const ICONS:Record<string,string>={starter,gemini,gpt,claude,grok,'local-7b':local7,'local-14b':local14,'local-70b':local70,'gpt-mini':gptMini,'gpt-boardroom':gptBoardroom,'claude-sonnet':claudeSonnet,'gemini-ultra':geminiUltra,deepseek,midjourney,sora,'local-32b':local32,used,mid,good,big,double,rack,slopclaw};
+export const ICONS:Record<string,string>={'claude-fable':tier0,'gemini-flash':tier1,'grok-murmur':tier2,'grok-meltdown':tier3,'deepseek-overthink':tier4,starter,gemini,gpt,claude,grok,'local-7b':local7,'local-14b':local14,'local-70b':local70,'gpt-mini':gptMini,'gpt-boardroom':gptBoardroom,'claude-sonnet':claudeSonnet,'gemini-ultra':geminiUltra,deepseek,midjourney,sora,'local-32b':local32,used,mid,good,big,double,rack,slopclaw};

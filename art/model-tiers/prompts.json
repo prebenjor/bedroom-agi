@@ -1,0 +1,35 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "transparent_background": true,
+  "references": [
+    "src/assets/icons/starter.webp",
+    "src/assets/icons/deepseek.webp"
+  ],
+  "assets": [
+    {
+      "id": "claude-fable",
+      "prompt": "Create ONE transparent-background game inventory illustration: a small worn storybook with a brass claw-shaped bookmark, representing a modest fictional AI text model called Fable. NO lettering, text, numbers, logos, borders or labels. Reference images are STYLE REFERENCES ONLY, do not copy their object. Match their warm gouache, textured ink outlines, chipped paint and little household-machine character. Cream paper, oxidised copper, forest green cover. One coherent chunky silhouette readable at 48px, three-quarter view, centred with generous transparent padding, light from upper left. No hands or people, no scenery. This is a single model badge for the illustrated Bedroom AGI idle game.",
+      "original": "originals/claude-fable.png"
+    },
+    {
+      "id": "gemini-flash",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: a compact brass photographic flash lamp with a green glass lens and a small white lightning-shaped reflected gleam. A middle-tier fictional AI model badge, sturdy household machinery.",
+      "original": "originals/gemini-flash.png"
+    },
+    {
+      "id": "grok-murmur",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: a tiny worn copper speaking trumpet with a folded green cloth muffler around its narrow end. Quiet entry-tier fictional AI model badge, simple recognisable silhouette.",
+      "original": "originals/grok-murmur.png"
+    },
+    {
+      "id": "grok-meltdown",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: an oversized battered red-and-brass megaphone with two orange sparks and a drooping green insulated cable. Overheated premium fictional AI model badge, not a fire scene.",
+      "original": "originals/grok-meltdown.png"
+    },
+    {
+      "id": "deepseek-overthink",
+      "prompt": "Create ONE transparent-background game inventory illustration. STYLE REFERENCES ONLY: match the attached icons' hand-painted warm gouache, textured ink outlines, chipped paint and worn brass/forest green/ochre materials. Single coherent chunky object, three-quarter view, centred, generous transparent padding, upper-left light. Readable at 48 pixels. NO lettering, words, numbers, logos, labels, borders, hands, people or scenery. Subject: a heavy vintage brass diving helmet modified with two chunky extra clockwork computation pods and a coil of green cable; an overcomplicated premium counterpart to the reference blue diving helmet. Big readable silhouette, few details.",
+      "original": "originals/deepseek-overthink.png"
+    }
+  ]
+}
