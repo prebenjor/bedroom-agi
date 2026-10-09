@@ -1,5 +1,5 @@
 import {MODELS,GPUS} from './content';
-import type {GameState,AccessState,AccessMode,Provider,PlanTier,Result,Quote} from './types';
+import type {GameState,AccessState,AccessMode,Provider,PlanTier,Result,Quote,Job} from './types';
 export const HOUR_SECONDS=5,DAY_SECONDS=120,WEEK_SECONDS=840,API_UNLOCK=350;
 export const PROVIDERS:Provider[]=['OpenAI','Anthropic','Google','xAI','DeepSeek'];
 export const PLAN_FEES:Record<PlanTier,number>={free:0,plus:120,pro:600};
@@ -84,11 +84,26 @@ export function advanceAccess(s:GameState,seconds:number){
  for(const p of s.access.plans){while(p.renew&&p.expiresAt<=s.calendarSeconds){const next=p.nextTier??p.tier,fee=PLAN_FEES[next];if(next==='free'||fee>s.cash){p.renew=false;break;}s.cash-=fee;s.expenses+=fee;s.totalExpenses+=fee;p.tier=next;p.expiresAt+=WEEK_SECONDS;delete p.nextTier;}}
  s.access.plans=s.access.plans.filter(p=>p.expiresAt>s.calendarSeconds);
 }
+// Simulate access and cash timing while keeping the selected quote constant.
+// Existing committed work can finish; no future news, heat or routing changes are assumed.
 export function weeklyProfit(s:GameState,q:Quote,model:string){
- const quota=quotaMetrics(s,model,q.access),m=MODELS.find(m=>m.id===model);
- const slots=q.access==='chat'?1:q.vram?Math.min(s.workers,Math.floor((GPUS.find(g=>g.id===s.gpu)?.vram??0)/q.vram)):s.workers;
- const horizonSeconds=calendar(s).resetIn;
- const jobs=q.duration>0&&q.available?Math.max(0,Math.min(Math.floor(horizonSeconds/q.duration)*slots,Math.floor(quota.remaining/(q.workload??1)))):0;
- const fee=q.access==='chat'&&m&&PROVIDERS.includes(m.company as Provider)?planMetrics(s,m.company as Provider).fee:0;
- return {period:'remaining-week' as const,horizonSeconds,jobs,fee,revenue:jobs*q.payout,usageFees:jobs*q.cost,profit:jobs*(q.payout-q.cost)-fee,resetIn:quota.resetIn};
+ const forecast=structuredClone(s),horizonSeconds=calendar(s).resetIn,route=modelAccess(s,model,q.access);
+ const fresh=new Set<Job>(),step=.25,workload=q.snapshot?.workload??(q.workload??tierWeight(model))/tierWeight(model);
+ let jobs=0,jobsStarted=0,committedJobs=0,revenue=0,committedRevenue=0,usageFees=0,fee=0;
+ for(let elapsed=0;elapsed<horizonSeconds;){
+  const dt=Math.min(step,horizonSeconds-elapsed),before=forecast.expenses;advanceAccess(forecast,dt);fee+=forecast.expenses-before;elapsed+=dt;
+  for(const job of forecast.jobs){job.remaining-=dt;if(job.remaining<=0){forecast.cash+=job.payout;revenue+=job.payout;if(fresh.has(job))jobs++;else {committedJobs++;committedRevenue+=job.payout;}}}
+  forecast.jobs=forecast.jobs.filter(job=>job.remaining>0);
+  if(!q.available||!Number.isFinite(q.duration)||q.duration<=0)continue;
+  for(let worker=0;worker<forecast.workers;worker++){
+   if(forecast.jobs.some(job=>job.worker===worker))continue;
+   const freeVRAM=(GPUS.find(g=>g.id===forecast.gpu)?.vram??0)-forecast.jobs.reduce((n,j)=>n+j.vram,0);
+   if(q.vram>freeVRAM)break;
+   const reserved=startAccess(forecast,{model,access:route,revision:q.revision,workload,fee:q.cost});if(!reserved.ok)break;
+   const job:Job={worker,model,business:s.business,remaining:q.duration,duration:q.duration,payout:q.payout,cost:q.cost,vram:q.vram,access:route,revision:q.revision,snapshot:q.snapshot};
+   forecast.jobs.push(job);fresh.add(job);jobsStarted++;usageFees+=q.cost;
+  }
+ }
+ const m=MODELS.find(m=>m.id===model),weeklyFee=route==='chat'&&m&&PROVIDERS.includes(m.company as Provider)?planMetrics(s,m.company as Provider).fee:0;
+ return {period:'remaining-week' as const,assumption:'constant-quote' as const,timeStepSeconds:step,horizonSeconds,jobs,jobsStarted,committedJobs,committedRevenue,fee,weeklyFee,revenue,usageFees,profit:revenue-usageFees-fee,cashChange:forecast.cash-s.cash,resetIn:horizonSeconds};
 }

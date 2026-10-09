@@ -52,10 +52,13 @@ export function decodeSave(raw:string,now:number):{state:GameState;offlineSecond
    if(j.revision!==undefined&&(typeof j.revision!=='string'||!revisionMetrics(s,j.model,j.revision).available))return null;
    if(j.snapshot!==undefined){if(!record(j.snapshot)||!bounded(j.snapshot.speed,1e12)||j.snapshot.speed<=0||!bounded(j.snapshot.payout,1e12)||j.snapshot.payout<=0||!bounded(j.snapshot.fee,1e12)||!bounded(j.snapshot.workload,1e12)||j.snapshot.workload<=0)return null;}
    if(j.version===1&&(j.access===undefined||j.revision===undefined||j.snapshot===undefined))return null;
-   if(j.access==='local'&&MODELS.find(m=>m.id===j.model)!.vram===0||j.access==='chat'&&(j.vram!==0||j.cost!==0||j.snapshot?.fee!==0))return null;
-   if(j.access==='api'&&MODELS.find(m=>m.id===j.model)!.vram>0)return null;
+   const model=MODELS.find(m=>m.id===j.model)!;
+   if(j.access==='local'&&(model.vram===0||j.vram===0)||j.access==='chat'&&(model.vram>0||model.tier==='visual'||j.vram!==0||j.cost!==0||j.snapshot?.fee!==0))return null;
+   if(j.access==='api'&&(model.vram>0||j.vram!==0))return null;
    if(j.duration<=0||j.remaining<=0||j.remaining>j.duration||j.vram>96)return null;
   }
+  const chats=s.jobs.filter((j:any)=>j.access==='chat');
+  if(chats.length>1||chats.length&&s.jobs.some((j:any)=>j.access===undefined&&j.model==='starter'))return null;
   const cap=GPUS.find(g=>g.id===s.gpu)?.vram??0;if(s.jobs.reduce((n:number,j:any)=>n+j.vram,0)>cap)return null;
   if(!Array.isArray(s.feed)||s.feed.length>30||s.feed.some((f:any)=>!Number.isFinite(f.at)||f.at<0||typeof f.text!=='string'||f.text.length>1200||!['job','news','purchase','system'].includes(f.kind)))return null;
   if(typeof s.notice!=='string'||s.notice.length>1200)return null;

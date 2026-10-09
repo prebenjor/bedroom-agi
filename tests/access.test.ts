@@ -125,3 +125,43 @@ test('weekly forecasts identify remaining-week horizon and provider coverage inc
  const plan=access.planMetrics(s,'OpenAI');assert.deepEqual(plan.coveredTiers,['base','plus']);assert.ok(plan.coveredModels.includes('gpt'));assert.ok(!plan.coveredModels.includes('sora'));assert.ok(!plan.coveredModels.includes('gpt-boardroom'));
  const estimate=access.weeklyProfit(s,quote(s,'gpt','reviews'),'gpt');assert.equal(estimate.period,'remaining-week');assert.equal(estimate.horizonSeconds,420);assert.ok(estimate.jobs<=Math.floor(420/quote(s,'gpt','reviews').duration));
 });
+
+test('cancelled Plus expiry caps constant-quote Chat throughput and charges no future subscription',()=>{
+ const s=ready();s.nextEvent=1e9;s.access.mode='chat';s.model='gpt';s.business='seo';dispatch(s,{type:'plan',provider:'OpenAI',tier:'plus'});s.access.plans[0].expiresAt=60;dispatch(s,{type:'plan-cancel'});
+ const before=structuredClone(s),q=quote(s,'gpt','seo'),estimate=access.weeklyProfit(s,q,'gpt'),actual=structuredClone(s);actual.auto=true;advance(actual,access.calendar(s).resetIn);
+ assert.equal(estimate.jobs,9);assert.equal(estimate.jobs,actual.slop-s.slop);assert.equal(estimate.fee,0);assert.ok(Math.abs(estimate.profit-(actual.cash-s.cash))<1e-7);assert.deepEqual(s,before);
+});
+test('forecast follows queued tier downgrades and affordable actual renewal charges',()=>{
+ for(const tier of ['plus','pro'] as const){const s=ready();s.nextEvent=1e9;s.access.mode='chat';s.model='gpt-boardroom';s.business='seo';dispatch(s,{type:'plan',provider:'OpenAI',tier:'pro'});s.access.plans[0].expiresAt=60;
+ if(tier==='plus')dispatch(s,{type:'plan',provider:'OpenAI',tier:'plus'});
+ const actual=structuredClone(s);actual.auto=true;const estimate=access.weeklyProfit(s,quote(s,s.model,s.business),s.model);advance(actual,access.calendar(s).resetIn);
+ assert.equal(estimate.jobs,actual.slop-s.slop);assert.equal(estimate.fee,tier==='plus'?120:600);assert.ok(Math.abs(estimate.profit-(actual.cash-s.cash))<1e-7);}
+});
+test('forecast stops unaffordable renewals and retains canonical quota across downgrade',()=>{
+ const s=ready();s.nextEvent=1e9;s.access.mode='chat';s.model='gpt';s.business='seo';dispatch(s,{type:'plan',provider:'OpenAI',tier:'plus'});s.access.plans[0].expiresAt=60;s.cash=0;
+ const actual=structuredClone(s);actual.auto=true;const estimate=access.weeklyProfit(s,quote(s,s.model,s.business),s.model);advance(actual,access.calendar(s).resetIn);
+ assert.equal(estimate.jobs,actual.slop);assert.equal(estimate.fee,0);assert.ok(Math.abs(estimate.profit-(actual.cash-s.cash))<1e-7);
+ const base=ready();base.nextEvent=1e9;base.access.mode='chat';base.model='gpt-mini';dispatch(base,{type:'plan',provider:'OpenAI',tier:'plus'});base.access.plans[0].expiresAt=60;base.access.usage['gpt-mini']=79;dispatch(base,{type:'plan',provider:'OpenAI',tier:'free'});
+ const projected=access.weeklyProfit(base,quote(base,base.model,'seo'),base.model),live=structuredClone(base);live.auto=true;advance(live,access.calendar(base).resetIn);assert.equal(projected.jobs,live.slop);assert.ok(projected.jobs<20);
+});
+test('new saves reject local and visual models marked Chat and duplicate serial Chat requests',()=>{
+ for(const model of ['local-7b','midjourney','sora']){const s=ready();s.jobs=[{worker:0,model,business:'seo',remaining:1,duration:2,payout:1,cost:0,vram:0,version:1,revision:'original',access:'chat',snapshot:{speed:1,payout:1,fee:0,workload:1}}];assert.equal(decodeSave(encodeSave(s,100000),100000),null,model);}
+ const s=ready();s.nextEvent=1e9;s.access.mode='chat';s.model='gpt';dispatch(s,{type:'plan',provider:'OpenAI',tier:'plus'});dispatch(s,{type:'generate'});s.workers=2;s.jobs.push({...structuredClone(s.jobs[0]),worker:1});assert.equal(decodeSave(encodeSave(s,100000),100000),null);
+});
+test('already-committed serial Chat survives plan expiry and save reload',()=>{
+ const s=ready();s.nextEvent=1e9;s.access.mode='chat';s.model='gpt';s.business='ads';dispatch(s,{type:'plan',provider:'OpenAI',tier:'plus'});s.access.plans[0].expiresAt=1;dispatch(s,{type:'plan-cancel'});dispatch(s,{type:'generate'});advance(s,2);
+ assert.equal(s.access.plans.length,0);assert.equal(s.jobs.length,1);const decoded=decodeSave(encodeSave(s,100000),100000);assert.ok(decoded);assert.deepEqual(decoded.state.jobs,s.jobs);
+});
+test('constant-quote API forecast bills actual starts through the Monday boundary',()=>{
+ const s=ready();s.nextEvent=1e9;s.access.mode='api';s.model='gpt';s.business='seo';s.workers=1;
+ s.jobs=[{worker:0,model:'gpt',business:'seo',remaining:840,duration:840,payout:37,cost:4,vram:0,access:'api'}];
+ const q=quote(s,s.model,s.business),estimate=access.weeklyProfit(s,q,s.model),actual=structuredClone(s);actual.auto=true;advance(actual,access.calendar(s).resetIn);
+ assert.equal(estimate.jobs+estimate.committedJobs,actual.slop);assert.ok(Math.abs(estimate.usageFees-(actual.expenses-s.expenses))<1e-7);assert.ok(Math.abs(estimate.profit-(actual.cash-s.cash))<1e-7);
+});
+test('constant-quote forecast respects committed Chat occupancy and reports its pinned revenue',()=>{
+ const s=ready();s.nextEvent=1e9;s.access.mode='chat';s.model='gpt';s.business='reviews';dispatch(s,{type:'plan',provider:'OpenAI',tier:'plus'});s.access.plans[0].expiresAt=1;dispatch(s,{type:'plan-cancel'});dispatch(s,{type:'generate'});
+ const before=structuredClone(s),estimate=access.weeklyProfit(s,quote(s,s.model,s.business),s.model);assert.equal(estimate.jobs,0);assert.equal(estimate.committedJobs,1);assert.equal(estimate.committedRevenue,s.jobs[0].payout);assert.equal(estimate.profit,s.jobs[0].payout);assert.deepEqual(s,before);
+});
+test('new transport snapshots reject cloud API memory and local access with zero memory',()=>{
+ for(const [model,accessMode,vram] of [['gpt','api',1],['local-7b','local',0]] as const){const s=ready();s.jobs=[{worker:0,model,business:'seo',remaining:1,duration:2,payout:1,cost:0,vram,version:1,revision:'original',access:accessMode,snapshot:{speed:1,payout:1,fee:0,workload:1}}];assert.equal(decodeSave(encodeSave(s,100000),100000),null);}
+});
