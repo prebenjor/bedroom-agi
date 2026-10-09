@@ -7,7 +7,7 @@ test('four cloud workers can run without consuming the purchased rig',()=>{
  const s=createGame();Object.assign(s,{cash:10000,runEarned:100000,claw:true,workers:4,auto:true,gpu:'mid',model:'grok'});
  advance(s,.25);const summary=agentSummary(s);
  assert.equal(summary.cloud,4);assert.equal(summary.local,0);assert.equal(summary.usedVRAM,0);assert.equal(summary.capacity,8);assert.equal(summary.idle,0);
- assert.deepEqual(summary.models,['Grok Bottom']);
+ assert.deepEqual(summary.models,['Grok Bottom Rant']);
 });
 
 test('local workers wait when one job occupies most of an 8 GB card',()=>{

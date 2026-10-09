@@ -6,11 +6,11 @@ import type { Model } from '../src/types';
 
 // Removing fit from quote must fail these tests: labels alone cannot set prices.
 test('specialty changes the real job duration and payout while neutral jobs keep base economics', () => {
- const model = Object.assign({id:'fit-fixture',name:'Fixture',company:'Fixture',tag:'CLOUD',description:'',speed:1,value:1,cost:2,quality:9,vram:0,unlock:0}, {specialties:['fit-job'],fit:{'fit-job':{speed:2,payout:3}}}) as Model;
+ const model = Object.assign({id:'fit-fixture',name:'Fixture',company:'Fixture',tag:'CLOUD',description:'',speed:1,value:1,cost:2,quality:9,vram:0,unlock:0}, {family:'Fixture',tier:'plus',capabilityTier:'plus',codingScore:65,contextCapacity:128000,testing:true,delegation:true,suitableBusinesses:['fit-job'],memoryGB:0,specialties:['fit-job'],fit:{'fit-job':{speed:2,payout:3}}}) as Model;
  MODELS.push(model);
  BUSINESSES.push({id:'fit-job',name:'Fixture',icon:'',description:'',payout:10,duration:13,scale:1,quality:0,unlock:0});
  try {
-  const s=createGame(); s.model=model.id; s.business='fit-job';
+  const s=createGame(); s.access.apiUnlocked=true; s.model=model.id; s.business='fit-job';
   const q=quote(s,model.id,'fit-job');
   const expectedDuration=13/(BASE_SPEED*2);
   assert.equal(q.duration,expectedDuration);
@@ -29,7 +29,7 @@ test('specialty changes the real job duration and payout while neutral jobs keep
 });
 
 test('local specialty electricity uses accelerated duration and quantization still cuts payout by 18 percent', () => {
- const model = Object.assign({id:'local-fit-fixture',name:'Fixture',company:'Fixture',tag:'LOCAL',description:'',speed:1,value:1,cost:0,quality:9,vram:6,unlock:0}, {specialties:['fit-job'],fit:{'fit-job':{speed:2,payout:3}}}) as Model;
+ const model = Object.assign({id:'local-fit-fixture',name:'Fixture',company:'Fixture',tag:'LOCAL',description:'',speed:1,value:1,cost:0,quality:9,vram:6,unlock:0}, {family:'Fixture',tier:'local',capabilityTier:'plus',codingScore:65,contextCapacity:128000,testing:true,delegation:true,suitableBusinesses:['fit-job'],memoryGB:6,specialties:['fit-job'],fit:{'fit-job':{speed:2,payout:3}}}) as Model;
  MODELS.push(model);
  BUSINESSES.push({id:'fit-job',name:'Fixture',icon:'',description:'',payout:10,duration:10.4,scale:1,quality:0,unlock:0});
  try {

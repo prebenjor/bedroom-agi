@@ -1,10 +1,11 @@
 import { MODELS, BUSINESSES, GPUS, UPGRADES, HARNESS, PERKS, NEWS, LOGS, TARGETS, FUNDING, WORKER_PRICES, WORKFLOWS, BASE_SPEED, CLAW_UNLOCK, CLAW_COST } from './content';
 import {PROJECTS,PROJECT_BUILD_SECONDS,projectBenefits,projectStatus} from './projects';
-import type {GameState,Action,Result,Quote,Feed} from './types';
+import type {GameState,Action,Result,Quote,Feed,AccessMode} from './types';
+import {createAccess,modelAccess,quotaMetrics,revisionMetrics,canUse,startAccess,changePlan,stopRenewals,advanceAccess,adoptRevision,selectRevision,tierWeight,apiAvailable,weeklyProfit} from './access';
 
 export const STEP=.25;
 export function createGame():GameState {
- return {version:1,cash:15,slop:0,totalSlop:0,runEarned:0,totalEarned:0,expenses:0,totalExpenses:0,seconds:0,totalSeconds:0,fraction:0,model:'starter',business:'seo',gpu:'none',heat:25,auto:false,claw:false,workers:1,routing:'manual',upgrades:[],harness:[],perks:[],jobs:[],prestige:0,valuation:0,totalValuation:0,ending:false,discovered:[],projects:{active:null,completed:[]},feed:[{at:0,text:'You have $15 and a client looking for a cheaper writer.',kind:'system'}],seed:314159,nextEvent:300,event:null,eventLeft:0,notice:'Generate two articles, then automate for $25.',muted:true,reducedMotion:false};
+ return {version:1,calendarSeconds:0,access:createAccess(),cash:15,slop:0,totalSlop:0,runEarned:0,totalEarned:0,expenses:0,totalExpenses:0,seconds:0,totalSeconds:0,fraction:0,model:'starter',business:'seo',gpu:'none',heat:25,auto:false,claw:false,workers:1,routing:'manual',upgrades:[],harness:[],perks:[],jobs:[],prestige:0,valuation:0,totalValuation:0,ending:false,discovered:[],projects:{active:null,completed:[]},feed:[{at:0,text:'You have $15 and a client looking for a cheaper writer.',kind:'system'}],seed:314159,nextEvent:300,event:null,eventLeft:0,notice:'Generate two articles, then automate for $25.',muted:true,reducedMotion:false};
 }
 export function has(s:GameState,id:string){return s.harness.includes(id)||s.perks.includes(id);}
 export function capacity(s:GameState){return GPUS.find(g=>g.id===s.gpu)?.vram??0;}
@@ -12,54 +13,57 @@ export function stage(s:GameState){return Math.min(5,Math.max(GPUS.findIndex(g=>
 function count(s:GameState,kind:string){return s.upgrades.filter(id=>id.startsWith(kind+'-')).length;}
 export function log(s:GameState,text:string,kind:Feed['kind']='system'){s.feed.unshift({at:s.totalSeconds,text,kind});s.feed.length=Math.min(30,s.feed.length);}
 function rand(s:GameState){s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0;return s.seed/4294967296;}
-export function quote(s:GameState,modelId:string,businessId:string):Quote {
+export function quote(s:GameState,modelId:string,businessId:string,options:{access?:AccessMode;revision?:string;ignoreBusy?:boolean;delegation?:boolean}={}):Quote {
  const m=MODELS.find(m=>m.id===modelId),b=BUSINESSES.find(b=>b.id===businessId);
  const empty={available:false,reason:'Choose a model and a business.',duration:0,payout:0,cost:0,net:0,vram:0,quantized:false};if(!m||!b)return empty;
+ const access=modelAccess(s,modelId,options.access),revision=revisionMetrics(s,modelId,options.revision),quota=quotaMetrics(s,modelId,access);
+ const suited=m.suitableBusinesses.includes(b.id),revisionSpeed=suited?revision.speed:1,revisionPayout=suited?revision.payout:1;
  const gpu=GPUS.find(g=>g.id===s.gpu),quantized=m.vram>capacity(s)&&has(s,'quantization'),vram=quantized?m.vram/2:m.vram;
  const benefits=projectBenefits(s),workflows=WORKFLOWS.filter(w=>w.business===b.id&&s.upgrades.includes(w.id));
  const workflowEffect=(effect:'speed'|'payout'|'request')=>workflows.filter(w=>w.effect===effect).reduce((n,w)=>n*w.multiplier,1);
  const speed=BASE_SPEED*(1+count(s,'speed')*.15)*(has(s,'speed')?1.2:1)*(s.claw&&has(s,'context')?1.12:1)*(s.claw&&has(s,'supervisor')?1.18:1)*(1+s.prestige*.85)*benefits.speed*workflowEffect('speed');
  const throttle=m.vram?Math.max(.32,1-Math.max(0,s.heat-65)/60):1;
  const fit=m.fit?.[b.id];
- const duration=b.duration/(m.speed*speed*(fit?.speed??1)*(m.vram?(gpu?.speed??1)*(has(s,'local')?1.3:1)*throttle:1));
+ const duration=b.duration/(m.speed*revisionSpeed*speed*(fit?.speed??1)*(m.vram?(gpu?.speed??1)*(has(s,'local')?1.3:1)*throttle:1));
  const event=NEWS.find(n=>n.id===s.event);
- const payout=b.payout*m.value*(fit?.payout??1)*(quantized?.82:1)*(1+count(s,'pay')*.2)*(1+count(s,'reach')*.16)*(has(s,'margin')?1.2:1)*(has(s,'reach')?1.25:1)*(s.claw&&has(s,'memory')?1.12:1)*(event?.effect==='demand'?event.multiplier:1)*benefits.payout*workflowEffect('payout');
- const overhead=s.claw&&m.id!=='starter'?.35*(s.workers-1)*b.scale*(has(s,'retries')?.75:1)*(has(s,'coordination')?.55:1):0;
- const request=m.cost*b.scale*(m.vram?1:benefits.cloudFee*workflowEffect('request'));
+ const payout=b.payout*m.value*revisionPayout*(fit?.payout??1)*(quantized?.82:1)*(1+count(s,'pay')*.2)*(1+count(s,'reach')*.16)*(has(s,'margin')?1.2:1)*(has(s,'reach')?1.25:1)*(s.claw&&has(s,'memory')?1.12:1)*(event?.effect==='demand'?event.multiplier:1)*benefits.payout*workflowEffect('payout');
+ const overhead=access!=='chat'&&s.claw&&m.id!=='starter'?.35*(s.workers-1)*b.scale*(has(s,'retries')?.75:1)*(has(s,'coordination')?.55:1):0;
+ const request=access==='chat'?0:m.cost*revision.fee*b.scale*(m.vram?1:benefits.cloudFee*workflowEffect('request'));
  const electricity=m.vram?(gpu?.watts??0)*duration*.00015*benefits.localElectricity:0;
- const cost=(request+electricity+overhead)*(has(s,'cheap')?.75:1)*(s.claw&&has(s,'cache')?.8:1)*(event?.effect==='cost'?event.multiplier:1);
- let reason='';if(s.runEarned<m.unlock)reason=`Unlocks at $${m.unlock.toLocaleString()} earned this run.`;
+ const cost=access==='chat'?0:(request+electricity+overhead)*(has(s,'cheap')?.75:1)*(s.claw&&has(s,'cache')?.8:1)*(event?.effect==='cost'?event.multiplier:1);
+ const accessCheck=canUse(s,{model:modelId,access,revision:revision.id,workload:b.scale,fee:0,ignoreBusy:options.ignoreBusy??true,delegation:options.delegation});
+ let reason=accessCheck.ok?'':accessCheck.message;if(s.runEarned<m.unlock)reason=`Unlocks at $${m.unlock.toLocaleString()} earned this run.`;
  if(s.runEarned<b.unlock)reason=`Unlocks at $${b.unlock.toLocaleString()} earned this run.`;
  if(m.quality<b.quality)reason=`Choose a stronger model for ${b.name.toLowerCase()}.`;if(vram>capacity(s))reason=`That model won’t fit: needs ${vram} GB; your rig has ${capacity(s)} GB.`;
- return {available:!reason,reason,duration,payout,cost,net:(payout-cost)/duration,vram,quantized};
+ return {available:!reason,reason,duration,payout,cost,net:(payout-cost)/duration,vram,quantized,access,revision:revision.id,workload:b.scale*tierWeight(modelId),allowance:quota.allowance,remainingQuota:quota.remaining,snapshot:{speed:b.duration/(m.speed*duration),payout:payout/(b.payout*m.value),fee:access==='chat'?0:m.cost>0?cost/(m.cost*b.scale):cost,workload:b.scale}};
 }
 export function chooseModel(s:GameState,business:string,freeVRAM=capacity(s)):string {
  if(s.routing==='manual'||!s.claw||!has(s,'routing'))return s.model;
- const available=MODELS.map(m=>({m,q:quote(s,m.id,business)})).filter(x=>x.q.available&&x.q.cost<=s.cash&&x.q.vram<=freeVRAM);
+ const available=MODELS.map(m=>({m,q:quote(s,m.id,business,{ignoreBusy:false})})).filter(x=>x.q.available&&x.q.cost<=s.cash&&x.q.vram<=freeVRAM);
  if(!available.length)return s.model;
  if(s.routing==='cheapest')available.sort((a,b)=>a.q.cost-b.q.cost||b.q.net-a.q.net);
  else if(s.routing==='local')available.sort((a,b)=>Number(b.m.vram>0)-Number(a.m.vram>0)||b.q.net-a.q.net);
  else available.sort((a,b)=>b.q.net-a.q.net);return available[0].m.id;
 }
-function startJob(s:GameState,worker:number):Result {
- const free=capacity(s)-s.jobs.reduce((n,j)=>n+j.vram,0);let model=chooseModel(s,s.business,free),q=quote(s,model,s.business);
+export function startJob(s:GameState,worker:number):Result {
+ if(s.jobs.some(j=>j.worker===worker)||worker<0||worker>=s.workers)return {ok:false,message:'Worker unavailable.'};
+ const free=capacity(s)-s.jobs.reduce((n,j)=>n+j.vram,0);let model=chooseModel(s,s.business,free),q=quote(s,model,s.business,{ignoreBusy:false});
  if(s.claw&&has(s,'fallback')&&(!q.available||q.cost>s.cash||q.vram>free)){
-  const options=MODELS.map(m=>({m,q:quote(s,m.id,s.business)})).filter(x=>x.q.available&&x.q.cost<=s.cash&&x.q.vram<=free).sort((a,b)=>b.q.net-a.q.net);
+  const options=MODELS.map(m=>({m,q:quote(s,m.id,s.business,{ignoreBusy:false})})).filter(x=>x.q.available&&x.q.cost<=s.cash&&x.q.vram<=free).sort((a,b)=>b.q.net-a.q.net);
   if(options[0]){model=options[0].m.id;q=options[0].q;}
  }
  if(!q.available)return {ok:false,message:q.reason};
  if(q.vram>free)return {ok:false,message:'Your GPU is busy. Waiting for a job to finish.'};
  if(q.cost>s.cash)return {ok:false,message:'You can’t afford the next request. Use Free Trial & Error with SEO articles.'};
- s.cash-=q.cost;s.expenses+=q.cost;s.totalExpenses+=q.cost;
- s.jobs.push({worker,model,business:s.business,remaining:q.duration,duration:q.duration,payout:q.payout,cost:q.cost,vram:q.vram});
+ const reserved=startAccess(s,{model,access:q.access,revision:q.revision,workload:q.snapshot!.workload,fee:q.cost});if(!reserved.ok)return reserved;
+ s.jobs.push({worker,model,business:s.business,remaining:q.duration,duration:q.duration,payout:q.payout,cost:q.cost,vram:q.vram,version:1,revision:q.revision,access:q.access,snapshot:q.snapshot});
  return {ok:true,message:'On it.'};
 }
 export function income(s:GameState){
  const model=chooseModel(s,s.business),q=quote(s,model,s.business);
  if(s.jobs.length){const revenue=s.jobs.reduce((n,j)=>n+j.payout/j.duration,0),cost=s.jobs.reduce((n,j)=>n+j.cost/j.duration,0);return {revenue,cost,net:revenue-cost,workers:s.jobs.length,model};}
  if(!q.available||!s.auto||q.cost>s.cash)return {revenue:0,cost:0,net:0,workers:0,model};
- const slots=q.vram?Math.min(s.workers,Math.floor(capacity(s)/q.vram)):s.workers;
- const revenue=q.payout/q.duration*slots,cost=q.cost/q.duration*slots;return {revenue,cost,net:revenue-cost,workers:slots,model};
+ const jobs=previewJobs(s),revenue=jobs.reduce((n,j)=>n+j.payout/j.duration,0),cost=jobs.reduce((n,j)=>n+j.cost/j.duration,0);return {revenue,cost,net:revenue-cost,workers:jobs.length,model};
 }
 export function prestigeQuote(s:GameState){
  const target=TARGETS[Math.min(2,s.prestige)]*(s.prestige>2?Math.pow(1.7,s.prestige-2):1);
@@ -67,17 +71,22 @@ export function prestigeQuote(s:GameState){
 }
 function spend(s:GameState,cost:number){if(cost>s.cash)return false;s.cash-=cost;return true;}
 function resetRun(s:GameState){
- const keep={prestige:s.prestige,valuation:s.valuation,totalValuation:s.totalValuation,perks:s.perks,discovered:s.discovered,projects:s.projects,totalSlop:s.totalSlop,totalEarned:s.totalEarned,totalExpenses:s.totalExpenses,totalSeconds:s.totalSeconds,ending:s.ending,muted:s.muted,reducedMotion:s.reducedMotion,feed:s.feed,seed:s.seed};
+ if(apiAvailable(s))s.access.apiUnlocked=true;stopRenewals(s);
+ const keep={calendarSeconds:s.calendarSeconds,access:s.access,...('career' in s?{career:s.career}:{}),prestige:s.prestige,valuation:s.valuation,totalValuation:s.totalValuation,perks:s.perks,discovered:s.discovered,projects:s.projects,totalSlop:s.totalSlop,totalEarned:s.totalEarned,totalExpenses:s.totalExpenses,totalSeconds:s.totalSeconds,ending:s.ending,muted:s.muted,reducedMotion:s.reducedMotion,feed:s.feed,seed:s.seed};
  Object.assign(s,createGame(),keep);s.cash=(has(s,'cash')?500:15)+projectBenefits(s).startingCash;s.auto=has(s,'auto');s.gpu=has(s,'gpu')?'mid':'none';s.claw=has(s,'claw');s.workers=has(s,'workers')?2:1;s.notice='Back in the bedroom. Your permanent upgrades carry over.';
 }
 export function dispatch(s:GameState,a:Action):Result {
  let message='',ok=false;
- if(a.type==='generate'){
+ if(a.type==='access'){if(['auto','chat','api','local'].includes(a.id)){s.access.mode=a.id;ok=true;message='Access mode changed.';}}
+ else if(a.type==='plan'){const result=changePlan(s,a.provider,a.tier);s.notice=result.message;if(result.ok)log(s,result.message,'purchase');return result;}
+ else if(a.type==='plan-cancel'){stopRenewals(s);ok=true;message='Automatic renewal stopped.';}
+ else if(a.type==='revision-adopt'||a.type==='revision-select'){const result=a.type==='revision-adopt'?adoptRevision(s,a.id):selectRevision(s,a.model,a.id);s.notice=result.message;return result;}
+ else if(a.type==='generate'){
   const slot=Array.from({length:s.workers},(_,i)=>i).find(i=>!s.jobs.some(j=>j.worker===i));
   if(slot===undefined)return {ok:false,message:'Everyone’s busy. Wait for a job to finish.'};
   const result=startJob(s,slot);s.notice=result.message;return result;
  }
- if(a.type==='auto'){if(s.auto)message='Already running automatically.';else if(spend(s,25)){s.auto=true;ok=true;message='Running automatically. You can leave it to work.';}}
+ else if(a.type==='auto'){if(s.auto)message='Already running automatically.';else if(spend(s,25)){s.auto=true;ok=true;message='Running automatically. You can leave it to work.';}}
  else if(a.type==='model'){
   const m=MODELS.find(m=>m.id===a.id);if(m){const q=quote(s,m.id,s.business);if(s.runEarned>=m.unlock&&q.vram<=capacity(s)){s.model=m.id;ok=true;message=`Using ${m.name}.`;}else message=q.reason;}
  }
@@ -142,7 +151,7 @@ export function advance(s:GameState,seconds:number){
  if(!Number.isFinite(seconds)||seconds<=0)return;s.fraction+=seconds;
  const steps=Math.floor((s.fraction+1e-9)/STEP);s.fraction=Math.max(0,s.fraction-steps*STEP);
  for(let i=0;i<steps;i++){
-  s.seconds+=STEP;s.totalSeconds+=STEP;
+  s.seconds+=STEP;s.totalSeconds+=STEP;advanceAccess(s,STEP);
   const active=s.projects.active;
   if(active&&active.remaining>0){
    active.remaining=Math.max(0,active.remaining-STEP);
@@ -170,3 +179,7 @@ export function advance(s:GameState,seconds:number){
   }
  }
 }
+
+// Use this for forecasts: real routing, cash, quota and VRAM reservations on a clone.
+export function previewJobs(s:GameState){const preview=structuredClone(s);preview.jobs=[];for(let worker=0;worker<preview.workers;worker++)if(!startJob(preview,worker).ok)break;return preview.jobs;}
+export function weeklyIncome(s:GameState,model=chooseModel(s,s.business)){return weeklyProfit(s,quote(s,model,s.business,{ignoreBusy:true}),model);}

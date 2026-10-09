@@ -6,7 +6,7 @@ import {projectedIncome} from '../src/presentation';
 
 // Missing IDs and mismatched job snapshots are user-visible catalogue failures.
 test('all expanded catalogue choices participate in valid real job quotes',()=>{
- const models=['starter','gemini','gpt','claude','grok','local-7b','local-14b','local-70b','gpt-mini','gpt-boardroom','claude-sonnet','gemini-ultra','deepseek','midjourney','sora','local-32b'];
+ const models=['starter','gemini','gpt','claude','grok','local-7b','local-14b','local-70b','gpt-mini','gpt-boardroom','claude-sonnet','gemini-ultra','deepseek','midjourney','sora','local-32b','claude-fable','gemini-flash','grok-murmur','grok-meltdown','deepseek-overthink'];
  const businesses=['seo','linkedin','images','video','reviews','ads','ebooks','decks'];
  assert.deepEqual(MODELS.map(m=>m.id).sort(),models.sort());
  assert.deepEqual(BUSINESSES.map(b=>b.id).sort(),businesses.sort());

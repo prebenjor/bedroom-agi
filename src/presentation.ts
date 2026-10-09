@@ -1,5 +1,5 @@
 import {MODELS,BUSINESSES,UPGRADES,WORKFLOWS,GPUS,HARNESS,WORKER_PRICES,CLAW_UNLOCK,CLAW_COST} from './content';
-import {capacity,chooseModel,has,quote,dispatch} from './engine';
+import {capacity,chooseModel,has,quote,dispatch,previewJobs} from './engine';
 import type {GameState,Quote,Upgrade,Action} from './types';
 
 export type ProductionKind='manual-ready'|'manual-running'|'automatic-running'|'waiting-for-vram'|'paused';
@@ -35,15 +35,9 @@ export function productionStatus(s:GameState):ProductionStatus {
 }
 
 export function projectedIncome(s:GameState){
- let cash=s.cash,freeVRAM=capacity(s),slots=0,revenue=0,cost=0;
- const model=nextSetup(s).model;
- for(let worker=0;worker<s.workers;worker++){
-  const next=nextSetup({...s,cash},freeVRAM),q=next.quote;
-  if(!q.available||q.cost>cash||q.vram>freeVRAM)break;
-  cash-=q.cost;freeVRAM-=q.vram;slots++;
-  revenue+=q.payout/q.duration;cost+=q.cost/q.duration;
- }
- return {net:revenue-cost,revenue,cost,slots,model};
+ const jobs=previewJobs(s),model=jobs[0]?.model??nextSetup({...s,jobs:[]}).model;
+ const revenue=jobs.reduce((n,j)=>n+j.payout/j.duration,0),cost=jobs.reduce((n,j)=>n+j.cost/j.duration,0);
+ return {net:revenue-cost,revenue,cost,slots:jobs.length,model};
 }
 
 export function upgradePreview(s:GameState,id:string){
