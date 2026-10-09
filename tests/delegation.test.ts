@@ -7,7 +7,7 @@ test('parallel delegation needs its coordination upgrade without blocking budget
  const s=setup(),options={mode:'parallel' as const,helpers:[{model:'gpt',access:'api' as const},{model:'gpt',access:'api' as const}]};
  const before=structuredClone(s),locked=coding.delegationPreview(s,options);
  assert.equal(locked.available,false);assert.match(locked.reason,/One agent in charge/);
- assert.equal(dispatch(s,{type:'delegate',options,budget:1000}).ok,false);assert.deepEqual(s,before);
+ assert.equal(dispatch(s,{type:'delegate',options,budget:1000}).ok,false);assert.match(s.notice,/One agent in charge/);assert.deepEqual({...s,notice:before.notice},before);
  assert.equal(coding.delegationPreview(s,{mode:'budget',helpers:[options.helpers[0]]}).available,true);
  assert.equal(dispatch(s,{type:'harness',id:'coordination'}).ok,true);
  assert.equal(coding.delegationPreview(s,options).available,true);
