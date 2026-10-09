@@ -94,7 +94,7 @@ export function weeklyProfit(s:GameState,q:Quote,model:string){
   const dt=Math.min(step,horizonSeconds-elapsed),before=forecast.expenses;advanceAccess(forecast,dt);fee+=forecast.expenses-before;elapsed+=dt;
   for(const job of forecast.jobs){job.remaining-=dt;if(job.remaining<=0){forecast.cash+=job.payout;revenue+=job.payout;if(fresh.has(job))jobs++;else {committedJobs++;committedRevenue+=job.payout;}}}
   forecast.jobs=forecast.jobs.filter(job=>job.remaining>0);
-  if(!q.available||!Number.isFinite(q.duration)||q.duration<=0)continue;
+  if(!(q.suitable??q.available)||!Number.isFinite(q.duration)||q.duration<=0)continue;
   for(let worker=0;worker<forecast.workers;worker++){
    if(forecast.jobs.some(job=>job.worker===worker))continue;
    const freeVRAM=(GPUS.find(g=>g.id===forecast.gpu)?.vram??0)-forecast.jobs.reduce((n,j)=>n+j.vram,0);

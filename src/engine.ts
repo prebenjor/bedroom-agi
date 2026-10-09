@@ -35,7 +35,8 @@ export function quote(s:GameState,modelId:string,businessId:string,options:{acce
  let reason=accessCheck.ok?'':accessCheck.message;if(s.runEarned<m.unlock)reason=`Unlocks at $${m.unlock.toLocaleString()} earned this run.`;
  if(s.runEarned<b.unlock)reason=`Unlocks at $${b.unlock.toLocaleString()} earned this run.`;
  if(m.quality<b.quality)reason=`Choose a stronger model for ${b.name.toLowerCase()}.`;if(vram>capacity(s))reason=`That model won’t fit: needs ${vram} GB; your rig has ${capacity(s)} GB.`;
- return {available:!reason,reason,duration,payout,cost,net:(payout-cost)/duration,vram,quantized,access,revision:revision.id,workload:b.scale*tierWeight(modelId),allowance:quota.allowance,remainingQuota:quota.remaining,snapshot:{speed:b.duration/(m.speed*duration),payout:payout/(b.payout*m.value),fee:access==='chat'?0:m.cost>0?cost/(m.cost*b.scale):cost,workload:b.scale}};
+ const suitable=s.runEarned>=m.unlock&&s.runEarned>=b.unlock&&m.quality>=b.quality&&vram<=capacity(s)&&(!options.delegation||(m.delegation&&access!=='chat'));
+ return {available:!reason,suitable,reason,duration,payout,cost,net:(payout-cost)/duration,vram,quantized,access,revision:revision.id,workload:b.scale*tierWeight(modelId),allowance:quota.allowance,remainingQuota:quota.remaining,snapshot:{speed:b.duration/(m.speed*duration),payout:payout/(b.payout*m.value),fee:access==='chat'?0:m.cost>0?cost/(m.cost*b.scale):cost,workload:b.scale}};
 }
 export function chooseModel(s:GameState,business:string,freeVRAM=capacity(s)):string {
  if(s.routing==='manual'||!s.claw||!has(s,'routing'))return s.model;

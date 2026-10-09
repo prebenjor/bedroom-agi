@@ -32,4 +32,4 @@ export interface GameState {
 }
 export type Action = {type:'access';id:AccessMode|'auto'} | {type:'plan';provider:Provider;tier:PlanTier} | {type:'plan-cancel'} | {type:'revision-adopt';id:string} | {type:'revision-select';model:string;id:string} | {type:'generate'|'auto'|'claw'|'worker'|'prestige'} | {type:'model'|'business'|'gpu'|'upgrade'|'harness'|'perk'|'workflow'|'project-start'|'project-choice';id:string} | {type:'routing';id:Routing};
 export interface Result {ok:boolean; message:string}
-export interface Quote {access?:AccessMode;revision?:string;workload?:number;allowance?:number;remainingQuota?:number;snapshot?:FinancialSnapshot;available:boolean; reason:string; duration:number; payout:number; cost:number; net:number; vram:number; quantized:boolean}
+export interface Quote {suitable?:boolean;access?:AccessMode;revision?:string;workload?:number;allowance?:number;remainingQuota?:number;snapshot?:FinancialSnapshot;available:boolean; reason:string; duration:number; payout:number; cost:number; net:number; vram:number; quantized:boolean}
