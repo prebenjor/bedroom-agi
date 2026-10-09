@@ -58,7 +58,9 @@ try{
   await page.locator('#room').screenshot({path:path.join(root,'workers-'+workers+'.png')});
  }
  await page.waitForTimeout(600);assert.equal((await state()).room.effectsActive,false);
- const still=await page.locator('#room').screenshot();await page.waitForTimeout(1200);assert.deepEqual(await page.locator('#room').screenshot(),still);
+ const still=await page.locator('#room').screenshot(),stillState=await state();await page.waitForTimeout(1200);const later=await page.locator('#room').screenshot();
+ if(!later.equals(still)){fs.writeFileSync(path.join(root,'reduced-before.png'),still);fs.writeFileSync(path.join(root,'reduced-after.png'),later);console.log(JSON.stringify({reducedBefore:stillState.room,reducedAfter:(await state()).room,beforeJobs:stillState.jobs.length,afterJobs:(await state()).jobs.length}));}
+ assert.ok(later.equals(still),'Reduced-motion room pixels changed; inspect reduced-before.png and reduced-after.png');
  // Layer state follows replacement saves and does not leak from the previous room.
  await restore(base);await ready(page);assert.deepEqual((await state()).room.activeLayers,[]);
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(root,'mobile.png'),fullPage:true});
