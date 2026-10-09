@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {MODELS,BUSINESSES,WORKFLOWS} from '../src/content.ts';
-import {createGame,dispatch,quote} from '../src/engine.ts';
+import {createGame,dispatch,quote,prestigeQuote,advance} from '../src/engine.ts';
 import {PROJECTS} from '../src/projects.ts';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../.qa');fs.mkdirSync(root,{recursive:true});
-const base=process.env.BEDROOM_URL??'http://127.0.0.1:4180/';
+const base=process.env.BEDROOM_URL??'http://127.0.0.1:4182/';
 const browser=await chromium.launch({headless:true,...(process.env.BEDROOM_BROWSER?{executablePath:process.env.BEDROOM_BROWSER}:{})});
 const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});
 const page=await context.newPage(),errors=[];
@@ -16,7 +16,7 @@ const state=()=>page.evaluate(()=>JSON.parse(window.render_game_to_text()));
 const step=ms=>page.evaluate(ms=>window.advanceTime(ms),ms);
 const shot=async name=>{await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(root,name+'.png'),fullPage:true});};
 const closeDrawer=async()=>{if(await page.locator('#drawer').evaluate(d=>d.open)){await page.locator('#close-drawer').click();await page.waitForFunction(()=>JSON.parse(window.render_game_to_text()).ui.drawer===null);}};
-const open=async name=>{await closeDrawer();await page.locator('[data-drawer="'+name+'"]:visible').first().click();assert.equal((await state()).ui.drawer,name);return page.locator('[data-drawer-panel="'+name+'"]');};
+const open=async name=>{if(name!=='SlopBench')await closeDrawer();await page.locator('[data-drawer="'+name+'"]:visible').first().click();assert.equal((await state()).ui.drawer,name);return page.locator('[data-drawer-panel="'+name+'"]');};
 const expand=async name=>{const details=page.locator('#catalogue-'+name);if(await details.count()&&!await details.evaluate(d=>d.open)){await details.locator('summary').click();await page.waitForFunction(name=>JSON.parse(window.render_game_to_text()).ui.disclosures['catalogue-'+name]===true,name);}};
 const importState=async s=>{
  await closeDrawer();await page.locator('#settings').click();await page.locator('#save-text').fill(JSON.stringify({version:1,savedAt:Date.now(),state:s}));
@@ -26,14 +26,14 @@ try{
  await page.goto(base);await page.waitForFunction(()=>typeof window.render_game_to_text==='function');
  assert.equal((await state()).cash,15);
  const generate=await page.locator('#generate').boundingBox();assert.ok(generate&&generate.y>=0&&generate.y+generate.height<=844,'Generate must be visible on the initial phone screen');
- assert.ok(generate.height>=44,'Generate must have a usable touch target');
+ assert.ok(generate.height>=44,'Generate must have a usable touch target');const canvas=await page.locator('#room').boundingBox();assert.ok(canvas&&Math.abs(canvas.width/canvas.height-1.5)<.02,'Phone must retain the full room scene aspect ratio');
  assert.equal(await page.locator('#projects-entry').isVisible(),false,'Projects must not crowd the fresh phone screen');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await shot('mobile-initial');
  await page.locator('#generate').tap();await step(20000);await page.locator('#generate').tap();await step(20000);
  await page.locator('#automate').tap();assert.equal((await state()).auto,true);await step(180000);assert.ok((await state()).slop>=12);
  await page.setViewportSize({width:1366,height:768});
- let panel=await open('Models');await expand('Models');assert.equal(await panel.locator('[data-action=model]').count(),16);await shot('models');
- assert.equal(await panel.locator('.model-card:visible').count(),16,'Expanded catalogue must expose all sixteen models');
+ let panel=await open('Models');await expand('Models');assert.equal(await panel.locator('[data-action=model]').count(),21);await shot('models');
+ assert.equal(await panel.locator('.model-card:visible').count(),21,'Expanded catalogue must expose all twenty-one models');
  for(const m of MODELS){
   const row=panel.locator('#model-'+m.id);assert.match(await row.locator('[id$=-specialties]').textContent(),/Best for:/);
   for(const id of m.specialties)assert.ok((await row.locator('[id$=-specialties]').textContent()).includes(BUSINESSES.find(b=>b.id===id).name),m.id+' specialty');
@@ -49,6 +49,31 @@ try{
  // The business picker opens only after a second business unlocks.
  if((await state()).runEarned<150)await step(180000);
  panel=await open('Businesses');await expand('Businesses');assert.equal(await panel.locator('[data-action=business]').count(),8);assert.equal(await panel.locator('.business-card:visible').count(),8);await shot('businesses');
+ // Plans require explicit transport selection, and revisions require adoption.
+ const accessSetup=createGame();Object.assign(accessSetup,{cash:10000,runEarned:10000,totalSeconds:600});accessSetup.access.mode='api';accessSetup.calendarSeconds=840;accessSetup.access.usageWeek=2;
+ await importState(accessSetup);panel=await open('Models');await expand('Models');
+ await panel.locator('[data-disclosure=access] summary').click();
+ await panel.locator('[data-plan-provider=OpenAI][data-plan-tier=plus]').click();assert.match(await page.locator('#confirmation-body').textContent(),/access remains api/);await page.locator('#confirm-career').click();
+ assert.equal((await state()).access.mode,'api');assert.equal((await state()).cash,9880);
+ await panel.locator('[data-action=access][data-id=chat]').first().click();assert.equal((await state()).access.mode,'chat');
+ await panel.locator('[data-action=revision-adopt][data-id=gpt-r2]').click();assert.equal((await state()).access.selectedRevisions.gpt,'gpt-r2');
+ await panel.locator('[data-action=revision-select][data-id=gpt]').click();assert.equal((await state()).access.selectedRevisions.gpt,'original');
+ assert.match(await panel.locator('#model-gpt-capabilities').textContent(),/Coding 65.*128,000 context.*delegation/);assert.ok(!(await panel.locator('#model-gpt-detail').textContent()).includes('0 GB'));await panel.locator('#catalogue-Models summary').click();await panel.locator('[data-disclosure=access] summary').click();await panel.locator('.model-family').evaluateAll(els=>els.forEach(el=>el.open=false));await page.setViewportSize({width:1366,height:1000});await page.locator('#drawer-body').evaluate(el=>el.scrollTop=0);await shot('models');await page.setViewportSize({width:1366,height:768});panel=await open('SlopBench');assert.equal(await panel.locator('tbody tr').count(),21);await shot('slopbench');
+ await page.setViewportSize({width:390,height:844});assert.equal(Math.round((await page.locator('#drawer').boundingBox()).width),390);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.setViewportSize({width:1366,height:768});const cached=(await state()).benchmark.rows;await step(250);assert.deepEqual((await state()).benchmark.rows,cached,'Ticks must keep cached benchmark');
+ await panel.locator('[data-benchmark-model=gpt]').click();assert.equal((await state()).ui.drawer,'Models');assert.equal(await page.evaluate(()=>document.activeElement.dataset.id),'gpt');
+ const careerSetup=createGame();Object.assign(careerSetup,{cash:20000,runEarned:100000,totalSeconds:600,model:'gpt',workers:3,claw:true,auto:true,gpu:'big'});careerSetup.career={completed:8,byJob:{'bug-fixes':8}};advance(careerSetup,.25);
+ await importState(careerSetup);panel=await open('Businesses');await expand('Businesses');assert.equal(await panel.locator('.coding-card').count(),6);
+ const beforeSelection=await state();await panel.locator('[data-action=code-select][data-id=bug-fixes]').click();assert.equal((await state()).cash,beforeSelection.cash);assert.equal((await state()).coding.active,null);await step(1000);assert.equal((await state()).coding.active,null,'Selecting coding cannot accept or bill');
+ await panel.locator('#contract-approval').scrollIntoViewIfNeeded();await shot('coding');await page.setViewportSize({width:390,height:844});await panel.locator('#contract-approval').scrollIntoViewIfNeeded();await shot('coding-phone');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await panel.locator('#code-accept').click();assert.match(await page.locator('#confirmation-body').textContent(),/Automatic SlopClaw repeats/);await page.locator('#confirmation [data-close]').click();assert.equal((await state()).coding.active,null);
+ await panel.locator('#code-accept').click();await page.locator('#confirm-career').click();let coding=await state();assert.ok(coding.coding.active);assert.equal(coding.coding.active.work,'bug-fixes');assert.ok(coding.coding.approvedBudget>0);
+ await panel.locator('[data-action=code-select][data-id=small-scripts]').click();assert.equal((await state()).coding.approvedBudget,null);assert.equal((await state()).coding.active.work,'bug-fixes');
+ panel=await open('Agents');await panel.locator('[data-disclosure=roles] summary').click();await panel.locator('#role-tester').selectOption('claude-sonnet');await panel.locator('#role-tester').focus();await step(250);assert.equal(await page.evaluate(()=>document.activeElement.id),'role-tester');assert.equal(await panel.locator('#role-tester').inputValue(),'claude-sonnet');await panel.locator('[data-role-apply=tester]').click();assert.equal((await state()).coding.roles.tester.model,'claude-sonnet');
+ await panel.locator('#active-budget').fill('500');await panel.locator('#budget-approve').click();assert.match(await page.locator('#confirmation-body').textContent(),/different selected contract/);await page.locator('#confirm-career').click();assert.equal((await state()).coding.active.budget,500);assert.equal((await state()).coding.approvedBudget,null,'Active budget cannot authorize another selected type');
+ await panel.locator('[data-disclosure=delegation] summary').click();await panel.locator('#delegate-helper-0').selectOption('gpt-mini');await panel.locator('#delegate-review').click();assert.match(await panel.locator('#delegate-preview').textContent(),/unsent fees/);
+ await panel.locator('#delegate-approve').click();await page.locator('#confirm-career').click();assert.equal((await state()).coding.active.delegation,'budget');
+ await page.reload();await page.waitForFunction(()=>typeof window.render_game_to_text==='function');assert.equal((await state()).coding.approvedBudget,null);assert.equal((await state()).coding.active.work,'bug-fixes');
+ await page.setViewportSize({width:1366,height:768});
  const legacy=JSON.parse(fs.readFileSync(new URL('../tests/fixtures/legacy-v1.json',import.meta.url),'utf8')).state;
  await importState(legacy);assert.equal(await page.locator('#purchase-feedback').isVisible(),false);let old=await state();assert.equal(old.cash,legacy.cash);
  assert.deepEqual(old.jobs.map(({remaining,...j})=>j),legacy.jobs.map(({remaining,...j})=>j));
@@ -59,10 +84,10 @@ try{
  const selected=panel.locator('#model-local-32b');assert.equal(await selected.locator('[data-action=model]').getAttribute('aria-pressed'),'true');
  assert.match(await selected.locator('[id$=-price]').textContent(),/running cost \/ job.*payout/i);
  assert.match(await panel.locator('#model-gpt-price').textContent(),/request \/ job.*payout/i);
- let diagnostics=await state();assert.equal(diagnostics.catalogue.models,16);assert.equal(diagnostics.catalogue.businesses,8);
+ let diagnostics=await state();assert.equal(diagnostics.catalogue.models,21);assert.equal(diagnostics.catalogue.businesses,8);
  assert.equal(diagnostics.modelDetails.selected.id,'local-32b');assert.deepEqual(diagnostics.modelDetails.selected.specialties,MODELS.find(m=>m.id==='local-32b').specialties);
  assert.equal(diagnostics.modelDetails.selected.quote.cost,expected.cost);assert.equal(diagnostics.modelDetails.selected.quote.payout,expected.payout);
- assert.equal(diagnostics.modelDetails.rows.length,16);
+ assert.equal(diagnostics.modelDetails.rows.length,21);
  for(const row of diagnostics.modelDetails.rows)assert.ok(row.quote.duration>0&&row.quote.payout>0&&Number.isFinite(row.quote.net));
  await closeDrawer();await page.locator('#settings').click();const expandedDownload=page.waitForEvent('download');await page.locator('#export-save').click();await expandedDownload;
  const expandedExport=JSON.parse(await page.locator('#save-text').inputValue()).state;assert.equal(expandedExport.model,'local-32b');assert.equal(expandedExport.business,'ebooks');
@@ -101,7 +126,7 @@ try{
  await closeDrawer();assert.equal(await page.locator('#project-collection button:visible').count(),6);await shot('collection-phone');
  await page.reload();await page.waitForFunction(()=>typeof window.render_game_to_text==='function');assert.equal((await state()).projects.completed.length,6);
  await page.setViewportSize({width:1366,height:768});panel=await open('Projects');await shot('projects-complete');
- await closeDrawer();const {simulate}=await import('./balance.ts');const checkpoints=simulate('mixed').checkpoints;
+ await closeDrawer();const checkpoints=[0,1,2].map(prestige=>{const s=createGame();Object.assign(s,{prestige,cash:200000,totalSeconds:4000,claw:true,workers:3,auto:true,gpu:'big',model:'claude',harness:['routing'],perks:prestige?['auto','cash','speed','margin','gpu','claw','workers']:[]});s.runEarned=prestigeQuote(s).target;s.totalEarned=s.runEarned;return s;});
  // Cancelling destructive confirmations keeps Settings and pasted data intact.
  await page.locator('#settings').click();const pasted=JSON.stringify({version:1,savedAt:Date.now(),state:checkpoints[0]});await page.locator('#save-text').fill(pasted);
  await page.evaluate(()=>{window.__qaTextarea=document.querySelector('#save-text');});await page.locator('#import-save').click();await page.locator('#confirmation [data-close]').click();
@@ -139,5 +164,5 @@ try{
  await page.locator('#reset-save').click();await page.locator('#confirm-reset').click();assert.equal((await state()).prestige,0);await shot('overview');
  const invalidContext=await browser.newContext(),invalidPage=await invalidContext.newPage();await invalidPage.addInitScript(()=>localStorage.setItem('bedroom-agi-v1','{broken'));await invalidPage.goto(base);await invalidPage.waitForFunction(()=>typeof window.render_game_to_text==='function');
  await invalidPage.evaluate(()=>{document.dispatchEvent(new Event('visibilitychange'));window.dispatchEvent(new Event('pagehide'));});assert.equal(await invalidPage.evaluate(()=>localStorage.getItem('bedroom-agi-v1')),'{broken');await invalidContext.close();
- assert.deepEqual(errors,[]);console.log('Browser QA passed: phone controls, catalogues, workflow spending and actual quotes, six two-stage projects and keepsakes, retained rewards across funding/reload, legacy snapshots, save export/import, automation, stable focus, routing, recovery, three raises, ending and invalid-save preservation. No browser errors.');
+ assert.deepEqual(errors,[]);console.log('Browser QA passed: explicit plans and access, revision adoption, cached SlopBench, coding selection without billing, explicit contract and repeat budgets, assigned roles, delegation, approval cancellation and reload, phone controls, catalogues, workflow spending and actual quotes, six two-stage projects and keepsakes, retained rewards across funding/reload, legacy snapshots, save export/import, automation, stable focus, routing, recovery, three raises, ending and invalid-save preservation. No browser errors.');
 }finally{await browser.close();}

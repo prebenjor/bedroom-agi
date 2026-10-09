@@ -1,4 +1,4 @@
-export type Drawer = 'Businesses'|'Models'|'Rig'|'Agents'|'Upgrades'|'Projects'|'Funding';
+export type Drawer = 'Businesses'|'Models'|'Rig'|'Agents'|'Upgrades'|'Projects'|'Funding'|'SlopBench';
 export interface UiState {
  drawer:Drawer|null;
  disclosures:Record<string,boolean>;
