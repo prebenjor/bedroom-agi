@@ -26,7 +26,7 @@ test('all expanded catalogue choices participate in valid real job quotes',()=>{
 });
 
 test('new business unlocks enforce earned income even with enough purchase cash',()=>{
- for(const [id,unlock] of [['reviews',150],['ads',2500],['ebooks',16000],['decks',30000]] as const){
+ for(const {id,unlock} of BUSINESSES.filter(b=>['reviews','ads','ebooks','decks'].includes(b.id))){
   const s=createGame();Object.assign(s,{cash:1e9,runEarned:unlock-1,model:'claude',gpu:'rack'});
   assert.equal(dispatch(s,{type:'business',id}).ok,false,id);assert.equal(s.business,'seo');
   s.runEarned=unlock;assert.equal(dispatch(s,{type:'business',id}).ok,true,id);assert.equal(s.business,id);

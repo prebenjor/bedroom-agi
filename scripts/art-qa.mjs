@@ -80,8 +80,10 @@ try{
  assert.equal(await standalone.locator('.model-card img').count(),16,'Every model icon should be mounted');
  assert.equal(await standalone.locator('.hardware-row img').count(),6,'Every hardware icon should be mounted');
  assert.equal(await standalone.locator('.claw-banner img').count(),1,'SlopClaw icon should be mounted');
- assert.equal(artwork.length,23,'All 23 illustrated icons must be present');
- assert.equal(new Set(artwork.map(a=>a.source)).size,23,'Each catalogue choice needs its own illustration');
+ assert.equal(await standalone.locator('.project-card img').count(),6,'Every project needs its generated illustration');
+ assert.equal(await standalone.locator('.keepsake img').count(),6,'Every completed project needs a collection keepsake');
+ assert.equal(artwork.length,35,'Catalogue icons and project collection copies must all be present');
+ assert.equal(new Set(artwork.map(a=>a.source)).size,29,'The 23 catalogue and six project illustrations must be distinct');
  assert.equal(await standalone.locator('.business-card').count(),8);
  assert.ok(artwork.every(a=>a.ready&&a.source.startsWith('data:')),'All illustrated icons must be embedded and decoded');
  assert.deepEqual(external,[]);await embeddedContext.close();

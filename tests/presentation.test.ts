@@ -2,6 +2,53 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createGame,dispatch,quote,advance,income} from '../src/engine';
 import {productionStatus,projectedIncome,suggestedUpgrades,modelPreview,upgradePreview} from '../src/presentation';
+import * as presentation from '../src/presentation';
+
+test('purchase recommendations expose relevant workflow savings and a timed goal without mutation',()=>{
+ const s=createGame();Object.assign(s,{cash:1000,runEarned:100000,model:'gpt',business:'reviews',auto:true});
+ const before=structuredClone(s),api=presentation;
+ assert.equal(typeof api.purchaseCandidates,'function');
+ const candidates=api.purchaseCandidates(s);
+ assert.ok(candidates.some(c=>c.id==='workflow-reviews'&&c.gain>0&&c.action.type==='workflow'));
+ assert.ok(!candidates.some(c=>c.action.type==='workflow'&&c.id!=='workflow-reviews'));
+ assert.deepEqual(s,before);
+ s.cash=1;const goal=api.nextPurchaseGoal(s);
+ assert.ok(goal&&goal.candidate.cost>s.cash);assert.equal(goal.waitSeconds,null);
+ s.model='starter';s.business='seo';assert.ok((api.nextPurchaseGoal(s)?.waitSeconds??0)>0);
+});
+
+test('GPU candidates include newly enabled local models and workers require actual funded capacity',()=>{
+ const s=createGame();Object.assign(s,{cash:2000,runEarned:100000,model:'starter',business:'seo'});
+ const api=presentation;assert.equal(typeof api.purchaseCandidates,'function');
+ assert.ok(api.purchaseCandidates(s).some(c=>c.action.type==='gpu'&&c.gain>0&&c.expectedBenefit));
+ Object.assign(s,{cash:200000,gpu:'mid',model:'local-7b',claw:true,workers:1});
+ assert.ok(!api.purchaseCandidates(s).some(c=>c.action.type==='worker'),'A second worker alone cannot fit another 6 GB job');
+});
+
+test('hardware recommendations cannot take credit for an already available cloud switch',()=>{
+ const s=createGame();Object.assign(s,{cash:1000000,runEarned:1000000});
+ const candidates=presentation.purchaseCandidates(s);
+ assert.ok(!candidates.some(c=>c.id==='used'),'A 4 GB card cannot enable a 6 GB local model by itself');
+ assert.ok(!candidates.some(c=>c.id==='quantization'),'Quantization without any rig cannot enable a local model');
+});
+
+test('purchase goal ETAs require productive automation and manual starts lead to automation',()=>{
+ const s=createGame();advance(s,60);assert.equal(s.cash,15);
+ const manual=presentation.nextPurchaseGoal(s);
+ assert.equal(manual?.candidate.action.type,'auto');assert.equal(manual?.candidate.cost,25);assert.equal(manual?.waitSeconds,null);
+ assert.ok(!presentation.suggestedPurchases(s).some(c=>c.action.type==='auto'),'The production button already offers automation');
+ s.auto=true;
+ const automatic=presentation.nextPurchaseGoal(s);assert.ok(automatic&&automatic.waitSeconds!==null&&Number.isFinite(automatic.waitSeconds)&&automatic.waitSeconds>0);
+ Object.assign(s,{model:'claude',cash:0,runEarned:100000});
+ assert.equal(productionStatus(s).kind,'paused');assert.equal(presentation.nextPurchaseGoal(s)?.waitSeconds,null);
+});
+
+test('a meaningful affordable purchase is ready before a distant hardware savings goal',()=>{
+ const s=createGame();Object.assign(s,{cash:14000,runEarned:100000,auto:true});
+ const suggested=presentation.suggestedPurchases(s),goal=presentation.nextPurchaseGoal(s);
+ assert.ok(goal&&goal.candidate.cost<=s.cash&&goal.candidate.gain>0);
+ assert.equal(goal.waitSeconds,0);assert.equal(goal.candidate.id,suggested.find(c=>c.cost<=s.cash&&!c.reserveReason)?.id);
+});
 
 test('production distinguishes manual readiness, running jobs and automatic production',()=>{
  const s=createGame();assert.equal(productionStatus(s).kind,'manual-ready');

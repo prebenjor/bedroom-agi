@@ -1,9 +1,10 @@
-import { MODELS, BUSINESSES, GPUS, UPGRADES, HARNESS, PERKS, NEWS, LOGS, TARGETS, FUNDING, WORKER_PRICES } from './content';
+import { MODELS, BUSINESSES, GPUS, UPGRADES, HARNESS, PERKS, NEWS, LOGS, TARGETS, FUNDING, WORKER_PRICES, WORKFLOWS, BASE_SPEED, CLAW_UNLOCK, CLAW_COST } from './content';
+import {PROJECTS,PROJECT_BUILD_SECONDS,projectBenefits,projectStatus} from './projects';
 import type {GameState,Action,Result,Quote,Feed} from './types';
 
 export const STEP=.25;
 export function createGame():GameState {
- return {version:1,cash:15,slop:0,totalSlop:0,runEarned:0,totalEarned:0,expenses:0,totalExpenses:0,seconds:0,totalSeconds:0,fraction:0,model:'starter',business:'seo',gpu:'none',heat:25,auto:false,claw:false,workers:1,routing:'manual',upgrades:[],harness:[],perks:[],jobs:[],prestige:0,valuation:0,totalValuation:0,ending:false,discovered:[],feed:[{at:0,text:'You have $15 and a client looking for a cheaper writer.',kind:'system'}],seed:314159,nextEvent:300,event:null,eventLeft:0,notice:'Generate two articles, then automate for $25.',muted:true,reducedMotion:false};
+ return {version:1,cash:15,slop:0,totalSlop:0,runEarned:0,totalEarned:0,expenses:0,totalExpenses:0,seconds:0,totalSeconds:0,fraction:0,model:'starter',business:'seo',gpu:'none',heat:25,auto:false,claw:false,workers:1,routing:'manual',upgrades:[],harness:[],perks:[],jobs:[],prestige:0,valuation:0,totalValuation:0,ending:false,discovered:[],projects:{active:null,completed:[]},feed:[{at:0,text:'You have $15 and a client looking for a cheaper writer.',kind:'system'}],seed:314159,nextEvent:300,event:null,eventLeft:0,notice:'Generate two articles, then automate for $25.',muted:true,reducedMotion:false};
 }
 export function has(s:GameState,id:string){return s.harness.includes(id)||s.perks.includes(id);}
 export function capacity(s:GameState){return GPUS.find(g=>g.id===s.gpu)?.vram??0;}
@@ -15,14 +16,18 @@ export function quote(s:GameState,modelId:string,businessId:string):Quote {
  const m=MODELS.find(m=>m.id===modelId),b=BUSINESSES.find(b=>b.id===businessId);
  const empty={available:false,reason:'Choose a model and a business.',duration:0,payout:0,cost:0,net:0,vram:0,quantized:false};if(!m||!b)return empty;
  const gpu=GPUS.find(g=>g.id===s.gpu),quantized=m.vram>capacity(s)&&has(s,'quantization'),vram=quantized?m.vram/2:m.vram;
- const speed=.65*(1+count(s,'speed')*.15)*(has(s,'speed')?1.2:1)*(s.claw&&has(s,'context')?1.12:1)*(s.claw&&has(s,'supervisor')?1.18:1)*(1+s.prestige*.85);
+ const benefits=projectBenefits(s),workflows=WORKFLOWS.filter(w=>w.business===b.id&&s.upgrades.includes(w.id));
+ const workflowEffect=(effect:'speed'|'payout'|'request')=>workflows.filter(w=>w.effect===effect).reduce((n,w)=>n*w.multiplier,1);
+ const speed=BASE_SPEED*(1+count(s,'speed')*.15)*(has(s,'speed')?1.2:1)*(s.claw&&has(s,'context')?1.12:1)*(s.claw&&has(s,'supervisor')?1.18:1)*(1+s.prestige*.85)*benefits.speed*workflowEffect('speed');
  const throttle=m.vram?Math.max(.32,1-Math.max(0,s.heat-65)/60):1;
  const fit=m.fit?.[b.id];
  const duration=b.duration/(m.speed*speed*(fit?.speed??1)*(m.vram?(gpu?.speed??1)*(has(s,'local')?1.3:1)*throttle:1));
  const event=NEWS.find(n=>n.id===s.event);
- const payout=b.payout*m.value*(fit?.payout??1)*(quantized?.82:1)*(1+count(s,'pay')*.2)*(1+count(s,'reach')*.16)*(has(s,'margin')?1.2:1)*(has(s,'reach')?1.25:1)*(s.claw&&has(s,'memory')?1.12:1)*(event?.effect==='demand'?event.multiplier:1);
+ const payout=b.payout*m.value*(fit?.payout??1)*(quantized?.82:1)*(1+count(s,'pay')*.2)*(1+count(s,'reach')*.16)*(has(s,'margin')?1.2:1)*(has(s,'reach')?1.25:1)*(s.claw&&has(s,'memory')?1.12:1)*(event?.effect==='demand'?event.multiplier:1)*benefits.payout*workflowEffect('payout');
  const overhead=s.claw&&m.id!=='starter'?.35*(s.workers-1)*b.scale*(has(s,'retries')?.75:1)*(has(s,'coordination')?.55:1):0;
- const cost=(m.cost*b.scale+(m.vram?(gpu?.watts??0)*duration*.00015:0)+overhead)*(has(s,'cheap')?.75:1)*(s.claw&&has(s,'cache')?.8:1)*(event?.effect==='cost'?event.multiplier:1);
+ const request=m.cost*b.scale*(m.vram?1:benefits.cloudFee*workflowEffect('request'));
+ const electricity=m.vram?(gpu?.watts??0)*duration*.00015*benefits.localElectricity:0;
+ const cost=(request+electricity+overhead)*(has(s,'cheap')?.75:1)*(s.claw&&has(s,'cache')?.8:1)*(event?.effect==='cost'?event.multiplier:1);
  let reason='';if(s.runEarned<m.unlock)reason=`Unlocks at $${m.unlock.toLocaleString()} earned this run.`;
  if(s.runEarned<b.unlock)reason=`Unlocks at $${b.unlock.toLocaleString()} earned this run.`;
  if(m.quality<b.quality)reason=`Choose a stronger model for ${b.name.toLowerCase()}.`;if(vram>capacity(s))reason=`That model won’t fit: needs ${vram} GB; your rig has ${capacity(s)} GB.`;
@@ -58,12 +63,12 @@ export function income(s:GameState){
 }
 export function prestigeQuote(s:GameState){
  const target=TARGETS[Math.min(2,s.prestige)]*(s.prestige>2?Math.pow(1.7,s.prestige-2):1);
- return {target,eligible:s.runEarned>=target,name:FUNDING[Math.min(s.prestige,2)],reward:Math.max(0,Math.floor((10+s.prestige*4)*Math.sqrt(s.runEarned/target)*(has(s,'valuation')?1.5:1)))};
+ return {target,eligible:s.runEarned>=target,name:FUNDING[Math.min(s.prestige,2)],reward:Math.max(0,Math.floor((10+s.prestige*4)*Math.sqrt(s.runEarned/target)*(has(s,'valuation')?1.5:1)))+projectBenefits(s).valuation};
 }
 function spend(s:GameState,cost:number){if(cost>s.cash)return false;s.cash-=cost;return true;}
 function resetRun(s:GameState){
- const keep={prestige:s.prestige,valuation:s.valuation,totalValuation:s.totalValuation,perks:s.perks,discovered:s.discovered,totalSlop:s.totalSlop,totalEarned:s.totalEarned,totalExpenses:s.totalExpenses,totalSeconds:s.totalSeconds,ending:s.ending,muted:s.muted,reducedMotion:s.reducedMotion,feed:s.feed,seed:s.seed};
- Object.assign(s,createGame(),keep);s.cash=has(s,'cash')?500:15;s.auto=has(s,'auto');s.gpu=has(s,'gpu')?'mid':'none';s.claw=has(s,'claw');s.workers=has(s,'workers')?2:1;s.notice='Back in the bedroom. Your permanent upgrades carry over.';
+ const keep={prestige:s.prestige,valuation:s.valuation,totalValuation:s.totalValuation,perks:s.perks,discovered:s.discovered,projects:s.projects,totalSlop:s.totalSlop,totalEarned:s.totalEarned,totalExpenses:s.totalExpenses,totalSeconds:s.totalSeconds,ending:s.ending,muted:s.muted,reducedMotion:s.reducedMotion,feed:s.feed,seed:s.seed};
+ Object.assign(s,createGame(),keep);s.cash=(has(s,'cash')?500:15)+projectBenefits(s).startingCash;s.auto=has(s,'auto');s.gpu=has(s,'gpu')?'mid':'none';s.claw=has(s,'claw');s.workers=has(s,'workers')?2:1;s.notice='Back in the bedroom. Your permanent upgrades carry over.';
 }
 export function dispatch(s:GameState,a:Action):Result {
  let message='',ok=false;
@@ -88,8 +93,30 @@ export function dispatch(s:GameState,a:Action):Result {
   if(u&&!s.upgrades.includes(u.id)&&(!u.rank||s.upgrades.includes(`${u.kind}-${u.rank-1}`))&&spend(s,u.cost)){s.upgrades.push(u.id);ok=true;message=`Bought ${u.name.toLowerCase()}.`;}
   else if(u&&s.upgrades.includes(u.id))message='You already own that upgrade.';else if(u&&u.rank&&!s.upgrades.includes(`${u.kind}-${u.rank-1}`))message='Buy the previous upgrade in this category first.';
  }
+ else if(a.type==='workflow'){
+  const w=WORKFLOWS.find(w=>w.id===a.id),b=w&&BUSINESSES.find(b=>b.id===w.business);
+  if(!w||!b)message='That workflow does not exist.';
+  else if(s.runEarned<b.unlock)message='Unlock that business before buying its workflow.';
+  else if(s.upgrades.includes(w.id))message='You already own that workflow.';
+  else if(spend(s,w.cost)){s.upgrades.push(w.id);ok=true;message=`Bought ${w.name.toLowerCase()}.`;}
+ }
+ else if(a.type==='project-start'){
+  const p=PROJECTS.find(p=>p.id===a.id);
+  if(!p)message='That project does not exist.';
+  else if(s.projects.active)message='Finish the current project first.';
+  else if(s.projects.completed.some(c=>c.id===p.id))message='That project is already finished.';
+  else if(s.totalSeconds<p.unlock)message=`Available after ${Math.ceil(p.unlock/60)} minutes played.`;
+  else if(spend(s,p.cost)){s.projects.active={id:p.id,choices:[],remaining:0};ok=true;message=`${p.name} started. Choose the first feature.`;}
+ }
+ else if(a.type==='project-choice'){
+  const status=projectStatus(s),option=status?.decision?.options.find(o=>o.id===a.id);
+  if(!status)message='Start a project first.';
+  else if(status.phase==='building')message='The current feature is still being built.';
+  else if(!option)message='Choose one of the features for this decision.';
+  else {status.progress.choices.push(option.id);status.progress.remaining=PROJECT_BUILD_SECONDS;ok=true;message=`${status.project.name}: building ${option.feature.toLowerCase()}.`;}
+ }
  else if(a.type==='claw'){
-  if(s.claw)message='SlopClaw is already installed.';else if(s.runEarned<8000)message='SlopClaw unlocks at $8,000 earned this run.';else if(spend(s,2400)){s.claw=true;s.auto=true;ok=true;message='SlopClaw installed.';}
+  if(s.claw)message='SlopClaw is already installed.';else if(s.runEarned<CLAW_UNLOCK)message=`SlopClaw unlocks at $${CLAW_UNLOCK.toLocaleString()} earned this run.`;else if(spend(s,CLAW_COST)){s.claw=true;s.auto=true;ok=true;message='SlopClaw installed.';}
  }
  else if(a.type==='worker'){
   if(!s.claw)message='Install SlopClaw first.';else if(s.workers>=4)message='All four worker slots are filled.';else if(spend(s,WORKER_PRICES[s.workers])){s.workers++;ok=true;message=`Worker ${s.workers} added.`;}
@@ -116,6 +143,18 @@ export function advance(s:GameState,seconds:number){
  const steps=Math.floor((s.fraction+1e-9)/STEP);s.fraction=Math.max(0,s.fraction-steps*STEP);
  for(let i=0;i<steps;i++){
   s.seconds+=STEP;s.totalSeconds+=STEP;
+  const active=s.projects.active;
+  if(active&&active.remaining>0){
+   active.remaining=Math.max(0,active.remaining-STEP);
+   if(active.remaining===0){
+    const p=PROJECTS.find(p=>p.id===active.id)!;
+    const option=p.decisions[active.choices.length-1].options.find(o=>o.id===active.choices.at(-1))!;
+    if(active.choices.length===p.decisions.length){
+     s.projects.completed.push({id:active.id,choices:[...active.choices]});s.projects.active=null;
+     log(s,`${p.name} finished. ${option.feedback} Reward: ${p.rewardLabel}`);
+    }else log(s,`${p.name}: next decision ready. ${option.feedback}`);
+   }
+  }
   if(s.eventLeft>0){s.eventLeft=Math.max(0,s.eventLeft-STEP);if(!s.eventLeft)s.event=null;}
   if(s.seconds>=s.nextEvent){
    const fresh=NEWS.filter(n=>n.tier<=s.prestige&&!s.discovered.includes(n.id)),pool=fresh.length?fresh:NEWS.filter(n=>n.tier<=s.prestige);

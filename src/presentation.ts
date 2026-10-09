@@ -1,6 +1,6 @@
-import {MODELS,BUSINESSES,UPGRADES} from './content';
-import {capacity,chooseModel,has,quote} from './engine';
-import type {GameState,Quote,Upgrade} from './types';
+import {MODELS,BUSINESSES,UPGRADES,WORKFLOWS,GPUS,HARNESS,WORKER_PRICES,CLAW_UNLOCK,CLAW_COST} from './content';
+import {capacity,chooseModel,has,quote,dispatch} from './engine';
+import type {GameState,Quote,Upgrade,Action} from './types';
 
 export type ProductionKind='manual-ready'|'manual-running'|'automatic-running'|'waiting-for-vram'|'paused';
 export interface ProductionStatus {kind:ProductionKind;reason:string;recoverable:boolean;model:string;quote:Quote}
@@ -63,6 +63,79 @@ export function suggestedUpgrades(s:GameState):Upgrade[]{
  if(suggestions.length<2&&goal)suggestions.push(goal);
  const cooling=s.heat>65?UPGRADES.find(u=>u.kind==='cool'&&!s.upgrades.includes(u.id)):undefined;
  return (cooling?[cooling,...suggestions]:suggestions).slice(0,2);
+}
+
+export interface PurchaseCandidate {
+ id:string;action:Action;cost:number;name:string;description:string;gain:number;
+ payback:number|null;reserveReason:string;expectedBenefit?:string;
+}
+
+// Reserve each worker's cash and memory exactly as production does. Hardware
+// may earn its improvement by enabling a model; all other previews keep the route.
+export function purchaseCandidates(s:GameState):PurchaseCandidate[]{
+ const options:Omit<PurchaseCandidate,'gain'|'payback'|'reserveReason'>[]=[];
+ for(const kind of ['speed','pay','reach','cool'] as const){
+  const u=UPGRADES.find(u=>u.kind===kind&&!s.upgrades.includes(u.id));
+  if(u)options.push({...u,action:{type:'upgrade',id:u.id}});
+ }
+ const workflow=WORKFLOWS.find(w=>w.business===s.business&&!s.upgrades.includes(w.id));
+ if(workflow)options.push({...workflow,action:{type:'workflow',id:workflow.id}});
+ const currentGPU=GPUS.findIndex(g=>g.id===s.gpu);
+ for(const [index,g] of GPUS.entries())if(index>currentGPU)options.push({...g,action:{type:'gpu',id:g.id}});
+ if(!s.claw&&s.runEarned>=CLAW_UNLOCK)options.push({id:'claw',action:{type:'claw'},cost:CLAW_COST,name:'SlopClaw',description:'Open worker slots, routing and harness upgrades.',expectedBenefit:'Unlocks workers and the agent harness.'});
+ if(s.claw&&s.workers<4)options.push({id:'worker',action:{type:'worker'},cost:WORKER_PRICES[s.workers],name:`Worker ${s.workers+1}`,description:'Run another job when requests and memory fit.'});
+ for(const h of HARNESS)if(!s.harness.includes(h.id)&&(s.claw||h.id==='quantization'))options.push({...h,action:{type:'harness',id:h.id}});
+ const candidates:PurchaseCandidate[]=[];
+ for(const option of options){
+  const affordable=option.cost<=s.cash;
+  const preview=structuredClone(s);
+  // Savings goals are valued once the purchase and a full request batch can be funded.
+  if(!affordable)preview.cash=option.cost+Math.max(s.cash,100,quote(s,s.model,s.business).cost*s.workers);
+  const hardware=option.action.type==='gpu'||(option.action.type==='harness'&&option.action.id==='quantization');
+  let before=projectedIncome(preview).net;
+  if(hardware)for(const m of MODELS.filter(m=>m.vram>0)){
+   if(quote(preview,m.id,s.business).available)before=Math.max(before,projectedIncome({...preview,model:m.id,routing:'manual'}).net);
+  }
+  if(!dispatch(preview,option.action).ok)continue;
+  let after=projectedIncome(preview).net,expectedBenefit=option.expectedBenefit;
+  if(hardware){
+   for(const m of MODELS.filter(m=>m.vram>0)){
+    const q=quote(preview,m.id,s.business);if(!q.available)continue;
+    const alternative={...preview,model:m.id,routing:'manual' as const};
+    const net=projectedIncome(alternative).net;
+    if(net>after){after=net;expectedBenefit=`Use ${m.name} for ${BUSINESSES.find(b=>b.id===s.business)!.name.toLowerCase()}.`;}
+   }
+  }
+  if(option.id.startsWith('cool-'))expectedBenefit='Reduces throttling as the room cools.';
+  const next=nextSetup(preview),reserveReason=affordable&&next.quote.available&&next.quote.cost>preview.cash?'You’ll need more cash to run a request after buying this.':'';
+  const gain=after-before;
+  if(gain<=0&&option.id!=='claw'&&!(s.heat>65&&option.action.type==='upgrade'&&option.id.startsWith('cool-')))continue;
+  candidates.push({...option,gain,payback:gain>0?option.cost/gain:null,reserveReason,expectedBenefit});
+ }
+ return candidates.sort((a,b)=>{
+  const cooling=(c:PurchaseCandidate)=>s.heat>65&&c.id.startsWith('cool-')?1:0;
+  return cooling(b)-cooling(a)||b.gain/b.cost-a.gain/a.cost||a.cost-b.cost||a.id.localeCompare(b.id);
+ });
+}
+
+export function suggestedPurchases(s:GameState):PurchaseCandidate[]{
+ const all=purchaseCandidates(s),affordable=all.filter(c=>c.cost<=s.cash&&(!c.reserveReason||c.id.startsWith('cool-')));
+ const suggestions=affordable.slice(0,2);
+ if(suggestions.length<2){const goal=all.filter(c=>c.cost>s.cash).sort((a,b)=>a.cost-b.cost||a.id.localeCompare(b.id))[0];if(goal)suggestions.push(goal);}
+ return suggestions;
+}
+
+export function nextPurchaseGoal(s:GameState):{candidate:PurchaseCandidate;waitSeconds:number|null}|null{
+ if(!s.auto){
+  const gain=projectedIncome(s).net;
+  return {candidate:{id:'auto',action:{type:'auto'},cost:25,name:'Automatic production',description:'Keep producing between check-ins.',gain,payback:gain>0?25/gain:null,reserveReason:'',expectedBenefit:'Generate jobs automatically.'},waitSeconds:null};
+ }
+ const ready=suggestedPurchases(s).find(c=>c.cost<=s.cash&&!c.reserveReason);
+ if(ready)return {candidate:ready,waitSeconds:0};
+ const candidate=purchaseCandidates(s).filter(c=>c.cost>s.cash).sort((a,b)=>a.cost-b.cost||a.id.localeCompare(b.id))[0];
+ if(!candidate)return null;
+ const net=projectedIncome(s).net;
+ return {candidate,waitSeconds:s.auto&&net>0?(candidate.cost-s.cash)/net:null};
 }
 
 export function modelPreview(s:GameState,id:string){

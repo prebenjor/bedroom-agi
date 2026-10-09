@@ -1,5 +1,6 @@
 import type {GameState} from './types';
-import {MODELS,BUSINESSES,GPUS,UPGRADES,HARNESS,PERKS,NEWS} from './content';
+import {MODELS,BUSINESSES,GPUS,UPGRADES,HARNESS,PERKS,NEWS,WORKFLOWS} from './content';
+import {PROJECTS,PROJECT_BUILD_SECONDS} from './projects';
 export function encodeSave(state:GameState,savedAt:number){return JSON.stringify({version:1,savedAt,state});}
 export function clockStep(last:number,now:number){return {seconds:Math.min(7200,Math.max(0,(now-last)/1000)),next:Math.max(last,now)};}
 export function decodeSave(raw:string,now:number):{state:GameState;offlineSeconds:number;savedAt:number}|null{
@@ -12,9 +13,19 @@ export function decodeSave(raw:string,now:number):{state:GameState;offlineSecond
   if(!Number.isInteger(s.prestige)||s.prestige<0||s.prestige>100||!Number.isInteger(s.workers)||s.workers<1||s.workers>4||!Number.isFinite(s.heat)||s.heat<25||s.heat>99||s.fraction>=.25)return null;
   for(const key of ['auto','claw','ending','muted','reducedMotion'])if(typeof s[key]!=='boolean')return null;
   if(!MODELS.some(m=>m.id===s.model)||!BUSINESSES.some(b=>b.id===s.business)||!(s.gpu==='none'||GPUS.some(g=>g.id===s.gpu))||!['manual','cheapest','margin','local'].includes(s.routing))return null;
-  for(const [key,catalog] of [['upgrades',UPGRADES],['harness',HARNESS],['perks',PERKS],['discovered',NEWS]] as const){
+  for(const [key,catalog] of [['upgrades',[...UPGRADES,...WORKFLOWS]],['harness',HARNESS],['perks',PERKS],['discovered',NEWS]] as const){
    const values=s[key];if(!Array.isArray(values)||values.length>catalog.length||new Set(values).size!==values.length||values.some((v:unknown)=>!catalog.some(c=>c.id===v)))return null;
   }
+  if(s.projects===undefined)s.projects={active:null,completed:[]};
+  if(!s.projects||typeof s.projects!=='object'||!Array.isArray(s.projects.completed)||s.projects.completed.length>PROJECTS.length)return null;
+  const validProject=(p:any,complete:boolean)=>{
+   const project=PROJECTS.find(c=>c.id===p?.id);
+   if(!project||!Array.isArray(p.choices)||p.choices.length>project.decisions.length||p.choices.some((id:unknown,i:number)=>!project.decisions[i].options.some(o=>o.id===id)))return false;
+   if(complete)return p.choices.length===project.decisions.length&&p.remaining===undefined;
+   return Number.isFinite(p.remaining)&&p.remaining>=0&&p.remaining<=PROJECT_BUILD_SECONDS&&!(p.choices.length===0&&p.remaining>0)&&!(p.choices.length===project.decisions.length&&p.remaining===0);
+  };
+  if(s.projects.completed.some((p:any)=>!validProject(p,true))||new Set(s.projects.completed.map((p:any)=>p.id)).size!==s.projects.completed.length)return null;
+  if(s.projects.active!==null&&(!validProject(s.projects.active,false)||s.projects.completed.some((p:any)=>p.id===s.projects.active.id)))return null;
   if(s.event!==null&&!NEWS.some(n=>n.id===s.event))return null;
   if(!Array.isArray(s.jobs)||s.jobs.length>s.workers||new Set(s.jobs.map((j:any)=>j.worker)).size!==s.jobs.length)return null;
   for(const j of s.jobs){

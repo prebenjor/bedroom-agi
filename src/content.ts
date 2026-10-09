@@ -1,4 +1,7 @@
-import type {Model,Business,GPU,Upgrade,Harness,Perk,News} from './types';
+import type {Model,Business,GPU,Upgrade,Harness,Perk,News,Workflow} from './types';
+export const BASE_SPEED=1;
+export const CLAW_UNLOCK=900;
+export const CLAW_COST=650;
 // Fictional request prices per job, multiplied by the business scale. These are not vendor token rates.
 export const MODELS:Model[]=[
  {id:'starter',name:'Free Trial & Error',company:'A browser tab',tag:'FREE',description:'The free tier forgets the brief. The client will assume that was your choice.',specialties:['seo'],speed:1,value:1,cost:0,quality:1,vram:0,unlock:0},
@@ -22,19 +25,19 @@ export const BUSINESSES:Business[]=[
  {id:'seo',name:'SEO articles',icon:'¶',description:'Outrank the writer who actually tested the toaster. Then complain about search quality.',payout:7,duration:8,scale:1,quality:0,unlock:0},
  {id:'reviews',name:'Fake product reviews',icon:'★',description:'Five stars from someone who has never opened the box. The affiliate link works fine.',payout:25,duration:49,scale:2,quality:1,unlock:150},
  {id:'linkedin',name:'LinkedIn posts',icon:'in',description:'Write the CEO’s heartfelt layoff post. The copywriter’s contract is in the same announcement.',payout:40,duration:92,scale:3,quality:1.4,unlock:550},
- {id:'ads',name:'Ad copy',icon:'↗',description:'Replace the agency with twelve slogans and an invoice. Call the savings a creative breakthrough.',payout:85,duration:135,scale:5,quality:1.8,unlock:2500},
+ {id:'ads',name:'Ad copy',icon:'↗',description:'Replace the agency with twelve slogans and an invoice. Call the savings a creative breakthrough.',payout:85,duration:105,scale:5,quality:1.8,unlock:1800},
  {id:'images',name:'Engagement bait',icon:'✳',description:'Fake a flood, collect concerned comments, sell the traffic. Nobody asked where to donate.',payout:180,duration:400,scale:8,quality:2,unlock:5500},
  {id:'ebooks',name:'Ebooks',icon:'▤',description:'Sell a guide from an expert who does not exist. The person who wrote the sources gets exposure.',payout:450,duration:390,scale:16,quality:2.2,unlock:16000},
  {id:'decks',name:'Corporate pitch decks',icon:'▥',description:'Turn guessed savings into a chart. The people being replaced become the addressable market.',payout:700,duration:470,scale:24,quality:2.6,unlock:30000},
  {id:'video',name:'Synthetic videos',icon:'▷',description:'A whole crew’s work without the crew’s invoice. The model provider still wants its money.',payout:1100,duration:650,scale:35,quality:2.8,unlock:52000}
 ];
 export const GPUS:GPU[]=[
- {id:'used',name:'Used 4 GB card',description:'The seller says it only mined crypto on weekends. There were a lot of weekends.',cost:400,vram:4,speed:.8,watts:110},
- {id:'mid',name:'8 GB bargain',description:'Own the hardware outright. Keep paying the power company.',cost:1600,vram:8,speed:1.1,watts:180},
- {id:'good',name:'12 GB workhorse',description:'Enough memory to keep a small agency’s old workload humming under your desk.',cost:7000,vram:12,speed:1.45,watts:260},
- {id:'big',name:'24 GB monster',description:'Jensen’s leather jacket has a better margin than your business.',cost:24000,vram:24,speed:1.9,watts:420},
- {id:'double',name:'Dual 24 GB rig',description:'Two cards occupy the space where you used to put your feet.',cost:75000,vram:48,speed:2.4,watts:850},
- {id:'rack',name:'96 GB bedroom rack',description:'The landlord asked for a fire certificate. You offered him equity.',cost:190000,vram:96,speed:3,watts:1700}
+ {id:'used',name:'Used 4 GB card',description:'The seller says it only mined crypto on weekends. There were a lot of weekends.',cost:120,vram:4,speed:.8,watts:110},
+ {id:'mid',name:'8 GB bargain',description:'Own the hardware outright. Keep paying the power company.',cost:600,vram:8,speed:1.1,watts:180},
+ {id:'good',name:'12 GB workhorse',description:'Enough memory to keep a small agency’s old workload humming under your desk.',cost:1800,vram:12,speed:1.45,watts:260},
+ {id:'big',name:'24 GB monster',description:'Jensen’s leather jacket has a better margin than your business.',cost:7000,vram:24,speed:1.9,watts:420},
+ {id:'double',name:'Dual 24 GB rig',description:'Two cards occupy the space where you used to put your feet.',cost:24000,vram:48,speed:2.4,watts:850},
+ {id:'rack',name:'96 GB bedroom rack',description:'The landlord asked for a fire certificate. You offered him equity.',cost:80000,vram:96,speed:3,watts:1700}
 ];
 const upgradeNames={
  speed:['Saved prompts','Batch queue','Keyboard macros','Parallel requests','Token trimming','No more thinking'],
@@ -50,6 +53,16 @@ const upgradeCopy={
 };
 const upgradePrices={speed:[40,220,1800,9000,38000,140000],pay:[65,350,2200,11000,48000,190000],cool:[150,650,3000,15000,60000,230000],reach:[120,700,4500,23000,90000,350000]};
 export const UPGRADES:Upgrade[]=(['speed','pay','cool','reach'] as const).flatMap(kind=>upgradeNames[kind].map((name,rank)=>({id:`${kind}-${rank}`,name,description:upgradeCopy[kind][rank],cost:upgradePrices[kind][rank],kind,rank})));
+export const WORKFLOWS:Workflow[]=[
+ {id:'workflow-seo',name:'Article batches',description:'Queue related articles together. New SEO jobs finish 25% faster.',business:'seo',cost:110,effect:'speed',multiplier:1.25},
+ {id:'workflow-reviews',name:'Review bundles',description:'Reuse the product brief. Cloud request fees for reviews fall 25%.',business:'reviews',cost:300,effect:'request',multiplier:.75},
+ {id:'workflow-linkedin',name:'Monthly retainer',description:'Sell a month of heartfelt posts in advance. LinkedIn jobs pay 25% more.',business:'linkedin',cost:900,effect:'payout',multiplier:1.25},
+ {id:'workflow-ads',name:'Reusable campaign assets',description:'Keep the campaign brief. Cloud request fees for ad copy fall 20%.',business:'ads',cost:2000,effect:'request',multiplier:.8},
+ {id:'workflow-images',name:'Reusable image assets',description:'Keep the style references. Cloud request fees for images fall 25%.',business:'images',cost:4800,effect:'request',multiplier:.75},
+ {id:'workflow-ebooks',name:'Editorial templates',description:'Reuse the chapter structure. Ebook jobs finish 25% faster.',business:'ebooks',cost:14000,effect:'speed',multiplier:1.25},
+ {id:'workflow-decks',name:'Brand kit',description:'Every slide already has a logo. Pitch decks finish 20% faster.',business:'decks',cost:28000,effect:'speed',multiplier:1.2},
+ {id:'workflow-video',name:'Scene library',description:'Reuse the scenery. Cloud request fees for videos fall 25%.',business:'video',cost:52000,effect:'request',multiplier:.75}
+];
 export const HARNESS:Harness[]=[
  {id:'quantization',name:'Quantization',description:'Halve VRAM when a model won’t fit; earn 18% less. The brochure rounds that down to “negligible.”',cost:300},
  {id:'routing',name:'Model routing',description:'Choose by cost or profit. None of the CEOs need your loyalty.',cost:800},
@@ -182,5 +195,5 @@ export const LOGS=[
 ];
 export const STAGES=['A laptop and a desk','The hardware has arrived','Cables across the floor','Cooling the machines, heating the room','The rack crowds the bed','Growth has made living here worse'];
 export const FUNDING=['Seed Round','Series A','IPO'];
-export const TARGETS=[2500000,5800000,7500000];
-export const WORKER_PRICES=[0,8000,18000,55000];
+export const TARGETS=[700000,1000000,1300000];
+export const WORKER_PRICES=[0,2400,9000,27000];

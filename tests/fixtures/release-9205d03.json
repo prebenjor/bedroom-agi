@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "savedAt": 200000,
+  "sourceCommit": "9205d03",
+  "state": {
+    "version": 1,
+    "cash": 19479.364669016843,
+    "slop": 0,
+    "totalSlop": 0,
+    "runEarned": 60000,
+    "totalEarned": 0,
+    "expenses": 520.635330983157,
+    "totalExpenses": 520.635330983157,
+    "seconds": 0,
+    "totalSeconds": 0,
+    "fraction": 0,
+    "model": "local-32b",
+    "business": "ebooks",
+    "gpu": "rack",
+    "heat": 25,
+    "auto": false,
+    "claw": true,
+    "workers": 2,
+    "routing": "manual",
+    "upgrades": [
+      "speed-0",
+      "pay-0"
+    ],
+    "harness": [],
+    "perks": [],
+    "jobs": [
+      {
+        "worker": 0,
+        "model": "gpt-boardroom",
+        "business": "decks",
+        "remaining": 7,
+        "duration": 449.91952902040794,
+        "payout": 4998,
+        "cost": 488.4,
+        "vram": 0
+      },
+      {
+        "worker": 1,
+        "model": "local-32b",
+        "business": "ebooks",
+        "remaining": 11,
+        "duration": 104.45227836532185,
+        "payout": 2430,
+        "cost": 32.23533098315707,
+        "vram": 24
+      }
+    ],
+    "prestige": 0,
+    "valuation": 0,
+    "totalValuation": 0,
+    "ending": false,
+    "discovered": [],
+    "feed": [
+      {
+        "at": 0,
+        "text": "Using Llamateur 32B.",
+        "kind": "purchase"
+      },
+      {
+        "at": 0,
+        "text": "Ebooks selected.",
+        "kind": "purchase"
+      },
+      {
+        "at": 0,
+        "text": "You have $15 and a client looking for a cheaper writer.",
+        "kind": "system"
+      }
+    ],
+    "seed": 314159,
+    "nextEvent": 300,
+    "event": null,
+    "eventLeft": 0,
+    "notice": "On it.",
+    "muted": true,
+    "reducedMotion": false
+  }
+}

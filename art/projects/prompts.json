@@ -1,0 +1,40 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "transparent_background": true,
+  "references": [
+    "src/assets/icons/starter.webp",
+    "src/assets/icons/local-32b.webp"
+  ],
+  "assets": [
+    {
+      "id": "tiny-game",
+      "prompt": "Create one standalone transparent-background game inventory illustration for Bedroom AGI. A small battered dark-green handheld game console, chunky ochre buttons, a tiny screen showing a simple yellow pixel frog. One charming, convincing object. Match the supplied references' textured ink outlines, hand-painted gouache shading, worn dark-green materials, warm cream and brass/ochre accents. Friendly practical homemade object, less ornate than the corporate model badges. Strong readable silhouette and a few large details that survive a 48px display. Slight three-quarter perspective, consistent warm light from upper left. Isolate the object with transparent background, no scene, no floor, no extra framing, no letters, words, logos or numerals anywhere. This is a NEW project keepsake, the references specify style only.",
+      "original": "originals/tiny-game.png"
+    },
+    {
+      "id": "photo-organiser",
+      "prompt": "Create one standalone transparent-background game inventory illustration for Bedroom AGI. An open worn cream shoebox containing three neatly sorted photographic prints with bold sunset and mountain shapes, one orange divider tab. One compact, convincing object. Match the supplied references' textured ink outlines, hand-painted gouache shading, worn dark-green materials, warm cream and brass/ochre accents. Friendly practical homemade object, less ornate than the corporate model badges. Strong readable silhouette and a few large details that survive a 48px display. Slight three-quarter perspective, consistent warm light from upper left. Isolate the object with transparent background, no scene, no floor, no extra framing, no letters, words, logos or numerals anywhere. This is a NEW project keepsake, the references specify style only.",
+      "original": "originals/photo-organiser.png"
+    },
+    {
+      "id": "stock-tracker",
+      "prompt": "Create one standalone transparent-background game inventory illustration for Bedroom AGI. A small wooden shop crate holding three clearly separated jars, with one cream inventory card clipped to its side, only blank checkbox shapes on the card. One compact, convincing object. Match the supplied references' textured ink outlines, hand-painted gouache shading, worn dark-green materials, warm cream and brass/ochre accents. Friendly practical homemade object, less ornate than the corporate model badges. Strong readable silhouette and a few large details that survive a 48px display. Slight three-quarter perspective, consistent warm light from upper left. Isolate the object with transparent background, no scene, no floor, no extra framing, no letters, words, logos or numerals anywhere. This is a NEW project keepsake, the references specify style only.",
+      "original": "originals/stock-tracker.png"
+    },
+    {
+      "id": "invoice-helper",
+      "prompt": "Create one standalone transparent-background game inventory illustration for Bedroom AGI. A squat old cream calculator with dark-green buttons beside a short curling blank receipt and one small orange rubber stamp. One compact, convincing object group. Match the supplied references' textured ink outlines, hand-painted gouache shading, worn dark-green materials, warm cream and brass/ochre accents. Friendly practical homemade object, less ornate than the corporate model badges. Strong readable silhouette and a few large details that survive a 48px display. Slight three-quarter perspective, consistent warm light from upper left. Isolate the object with transparent background, no scene, no floor, no extra framing, no letters, words, logos or numerals anywhere. This is a NEW project keepsake, the references specify style only.",
+      "original": "originals/invoice-helper.png"
+    },
+    {
+      "id": "backup-tool",
+      "prompt": "Create one standalone transparent-background game inventory illustration for Bedroom AGI. A sturdy dark-green external hard drive with a brass latch, one neatly coiled black USB cable and a small amber status lamp. One compact, convincing object. Match the supplied references' textured ink outlines, hand-painted gouache shading, worn dark-green materials, warm cream and brass/ochre accents. Friendly practical homemade object, less ornate than the corporate model badges. Strong readable silhouette and a few large details that survive a 48px display. Slight three-quarter perspective, consistent warm light from upper left. Isolate the object with transparent background, no scene, no floor, no extra framing, no letters, words, logos or numerals anywhere. This is a NEW project keepsake, the references specify style only.",
+      "original": "originals/backup-tool.png"
+    },
+    {
+      "id": "community-website",
+      "prompt": "Create one standalone transparent-background game inventory illustration for Bedroom AGI. A miniature cream computer monitor on a simple stand showing a green community noticeboard layout: large colour blocks, an ochre calendar square and three very simple round profile symbols. No text. One compact, convincing object. Match the supplied references' textured ink outlines, hand-painted gouache shading, worn dark-green materials, warm cream and brass/ochre accents. Friendly practical homemade object, less ornate than the corporate model badges. Strong readable silhouette and a few large details that survive a 48px display. Slight three-quarter perspective, consistent warm light from upper left. Isolate the object with transparent background, no scene, no floor, no extra framing, no letters, words, logos or numerals anywhere. This is a NEW project keepsake, the references specify style only.",
+      "original": "originals/community-website.png"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MODELS, BUSINESSES } from '../src/content';
+import { MODELS, BUSINESSES, BASE_SPEED, GPUS } from '../src/content';
 import { createGame, quote, dispatch, advance } from '../src/engine';
 import type { Model } from '../src/types';
 
@@ -12,17 +12,18 @@ test('specialty changes the real job duration and payout while neutral jobs keep
  try {
   const s=createGame(); s.model=model.id; s.business='fit-job';
   const q=quote(s,model.id,'fit-job');
-  assert.equal(q.duration,10);
+  const expectedDuration=13/(BASE_SPEED*2);
+  assert.equal(q.duration,expectedDuration);
   assert.equal(q.payout,30);
   assert.equal(q.cost,2);
-  assert.equal(q.net,2.8);
+  assert.equal(q.net,28/expectedDuration);
   dispatch(s,{type:'generate'});
-  advance(s,10);
+  advance(s,Math.ceil(expectedDuration/.25)*.25);
   assert.equal(s.runEarned,30);
   assert.equal(s.cash,43);
   delete (model as Model & {fit?:unknown}).fit;
   const neutral=quote(s,model.id,'fit-job');
-  assert.equal(neutral.duration,20);
+  assert.equal(neutral.duration,13/BASE_SPEED);
   assert.equal(neutral.payout,10);
  } finally { MODELS.pop(); BUSINESSES.pop(); }
 });
@@ -35,9 +36,10 @@ test('local specialty electricity uses accelerated duration and quantization sti
   const s=createGame(); s.gpu='used'; s.harness=['quantization'];
   const q=quote(s,model.id,'fit-job');
   assert.equal(q.available,true);
-  assert.equal(q.duration,10);
+  const gpu=GPUS.find(g=>g.id==='used')!,expectedDuration=10.4/(BASE_SPEED*2*gpu.speed);
+  assert.equal(q.duration,expectedDuration);
   assert.ok(Math.abs(q.payout-24.6)<1e-9);
-  assert.ok(Math.abs(q.cost-0.165)<1e-9);
+  assert.ok(Math.abs(q.cost-gpu.watts*expectedDuration*.00015)<1e-9);
   assert.equal(q.vram,3);
  } finally { MODELS.pop(); BUSINESSES.pop(); }
 });
