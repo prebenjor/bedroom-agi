@@ -133,6 +133,7 @@ function delegatePlan(s:GameState,options:DelegationOptions):{pipeline:WorkPipel
  if(!original)return fail('There are no unsent sections to delegate. Legacy whole-job requests finish unchanged.');
  if(original.delegation)return fail('This contract has already been delegated.');
  if(!['budget','parallel'].includes(options.mode)||!Array.isArray(options.helpers)||!options.helpers.length||options.helpers.length>3)return fail('Choose one to three helpers.');
+ if(options.mode==='parallel'&&!has(s,'coordination'))return fail('Buy One agent in charge to unlock parallel delegation. Budget helpers are available now.');
  if(options.mode==='parallel'&&(options.helpers.length<2||options.helpers.length>s.workers))return fail('Parallel mode needs two or more available worker slots.');
  const targets=original.requests.filter(r=>r.status==='pending'&&(r.stage==='Build'||r.stage==='Section'));
  if(!targets.length)return fail('All build sections have already been sent.');
