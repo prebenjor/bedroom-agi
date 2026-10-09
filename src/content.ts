@@ -82,14 +82,14 @@ export const WORKFLOWS:Workflow[]=[
 ];
 export const HARNESS:Harness[]=[
  {id:'quantization',name:'Quantization',description:'Halve VRAM when a model won’t fit; earn 18% less. The brochure rounds that down to “negligible.”',cost:300},
- {id:'routing',name:'Model routing',description:'Choose by cost or profit. None of the CEOs need your loyalty.',cost:800},
- {id:'retries',name:'Retry limits',description:'Cut agent overhead by 25%. Put a spending limit on the apology loop.',cost:1200},
- {id:'memory',name:'Persistent memory',description:'Earn 12% more. Remember the brief after the company deletes its own knowledge base.',cost:3200},
- {id:'context',name:'Context cleanup',description:'Finish jobs 12% faster. A caption doesn’t need the founder’s life story.',cost:5500},
- {id:'coordination',name:'One agent in charge',description:'Cut agent overhead by 45%. Stop paying four models to nominate a fifth.',cost:11000},
+ {id:'routing',name:'Model routing',description:'Choose models by cost or profit, including a separate choice for each coding role. None of the CEOs need your loyalty.',cost:800},
+ {id:'retries',name:'Retry limits',description:'Cut agent overhead by 25%. Coding repairs use a stronger tester when available and need 25% less work.',cost:1200},
+ {id:'memory',name:'Persistent memory',description:'Earn 12% more. Repeating a coding job halves the briefing work. Someone finally kept the notes.',cost:3200},
+ {id:'context',name:'Context cleanup',description:'Finish jobs 12% faster and double usable coding context. The founder’s memoir can wait outside.',cost:5500},
+ {id:'coordination',name:'One agent in charge',description:'Enable parallel delegation and cut agent overhead by 45%. Stop paying four models to nominate a fifth.',cost:11000},
  {id:'fallback',name:'Budget fallback',description:'Switch to a model you can run and afford, including the free chatbot.',cost:18000},
- {id:'cache',name:'Response cache',description:'Cut running costs by 20%. Reuse the answer; keep the new-client price.',cost:36000},
- {id:'supervisor',name:'Delete the supervisor',description:'Finish jobs 18% faster. Management discovers the efficiency programme applies upstairs.',cost:65000}
+ {id:'cache',name:'Response cache',description:'Cut running costs by 20%. Coding scaffolding needs 30% less work. The client still gets the new-project invoice.',cost:36000},
+ {id:'supervisor',name:'Code review',description:'Enable an optional reviewer and finish jobs 18% faster. A capable reviewer catches one repair pass before testing.',cost:65000}
 ];
 export const PERKS:Perk[]=[
  {id:'cash',name:'Friends & family money',description:'Start with $500. Mention the bedroom in interviews; leave out the loan.',cost:2,tier:1},

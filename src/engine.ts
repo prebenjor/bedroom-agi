@@ -18,7 +18,7 @@ export function quote(s:GameState,modelId:string,businessId:string,options:{acce
  const m=MODELS.find(m=>m.id===modelId),b=BUSINESSES.find(b=>b.id===businessId);
  const empty={available:false,reason:'Choose a model and a business.',duration:0,payout:0,cost:0,net:0,vram:0,quantized:false};if(!m||!b)return empty;
  const access=modelAccess(s,modelId,options.access),revision=revisionMetrics(s,modelId,options.revision),quota=quotaMetrics(s,modelId,access);
- const suited=options.coding||m.suitableBusinesses.includes(b.id),revisionSpeed=suited?revision.speed:1,revisionPayout=suited?revision.payout:1;
+ const suited=options.coding||m.suitableBusinesses.includes(b.id),revisionSpeed=suited?revision.speed:1,revisionPayout=!options.coding&&suited?revision.payout:1;
  const gpu=GPUS.find(g=>g.id===s.gpu),quantized=m.vram>capacity(s)&&has(s,'quantization'),vram=quantized?m.vram/2:m.vram;
  const benefits=projectBenefits(s),workflows=options.coding?[]:WORKFLOWS.filter(w=>w.business===b.id&&s.upgrades.includes(w.id));
  const workflowEffect=(effect:'speed'|'payout'|'request')=>workflows.filter(w=>w.effect===effect).reduce((n,w)=>n*w.multiplier,1);

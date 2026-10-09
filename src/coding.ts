@@ -10,7 +10,7 @@ export const CODING_JOBS=[
  {id:'data-imports',name:'Data imports',unlock:5500,completions:2,difficulty:55,context:16000,payout:1300,duration:160,scale:10},
  {id:'websites',name:'Websites',unlock:16000,completions:4,difficulty:65,context:32000,payout:3600,duration:240,scale:16},
  {id:'internal-tools',name:'Internal tools',unlock:30000,completions:6,difficulty:75,context:64000,payout:9600,duration:340,scale:24},
- {id:'repository-migrations',name:'Repository migrations',unlock:52000,completions:8,difficulty:90,context:128000,payout:18000,duration:480,scale:35}
+ {id:'repository-migrations',name:'Repository migrations',unlock:52000,completions:8,difficulty:90,context:128000,payout:22000,duration:480,scale:35}
 ];
 export const LONG_FORM=['ebooks','decks','video'];
 export function createCoding():CodingState{return {recovery:false,content:[],selected:null,roles:{coordinator:null,coder:null,tester:null,reviewer:null},active:null,approvedBudget:null,lastReport:null};}
@@ -77,13 +77,13 @@ export function codingQuote(s:GameState,id=s.coding.selected??'bug-fixes'):Pipel
  add('Deliver','coordinator',.08);
  requests.forEach((r,i)=>r.id=i);
  const base=quote(s,roles.coder.model,'seo',{revision:coder.id,access:roles.coder.access,coding:true});
- return summarize(s,requests,job.payout*base.snapshot!.payout,repairs,reason,job.context);
+ return {...summarize(s,requests,job.payout*base.snapshot!.payout,repairs,reason,job.context),quantized:base.quantized};
 }
 /** Full committed contract economics. Progress never inflates its income rate. */
-export function productionQuote(s:GameState):Quote|PipelineQuote{const p=s.coding.active;return p?summarize(s,p.requests.map(r=>({...r,status:'pending'})),p.payout,p.repairs):s.coding.selected?codingQuote(s):quote(s,s.model,s.business);}
+export function productionQuote(s:GameState):Quote|PipelineQuote{const p=s.coding.active;return p?{...summarize(s,p.requests.map(r=>({...r,status:'pending'})),p.payout,p.repairs),quantized:p.quantized??false}:s.coding.selected?codingQuote(s):quote(s,s.model,s.business);}
 /** Remaining work/cash only; never use this for sustainable income or upgrade ROI. */
 export function remainingQuote(s:GameState):PipelineQuote|null{const p=s.coding.active;return p?summarize(s,p.requests,p.payout,p.repairs,p.pause):null;}
-function makePipeline(s:GameState,kind:'coding'|'content',work:string,q:PipelineQuote,budget:number):WorkPipeline{return {id:`${kind}-${s.totalSeconds}-${s.totalSlop}`,kind,work,payout:q.payout,requests:structuredClone(q.requests),budget,spent:0,repairs:q.repairs,helpers:0,delegation:null,pause:'',acceptedAt:s.totalSeconds};}
+function makePipeline(s:GameState,kind:'coding'|'content',work:string,q:PipelineQuote,budget:number):WorkPipeline{return {id:`${kind}-${s.totalSeconds}-${s.totalSlop}`,kind,work,payout:q.payout,quantized:q.quantized,requests:structuredClone(q.requests),budget,spent:0,repairs:q.repairs,helpers:0,delegation:null,pause:'',acceptedAt:s.totalSeconds};}
 export function acceptCoding(s:GameState,budget?:number):Result{
  if(!s.coding.selected)return result(false,'Select a coding contract first.');
  if(s.coding.active?.kind==='coding')return result(false,'Finish the current coding contract first.');const q=codingQuote(s);if(!q.available)return result(false,q.reason);
@@ -94,7 +94,7 @@ export function acceptCoding(s:GameState,budget?:number):Result{
 export function startContentPipeline(s:GameState,model:string,q:Quote):Result{
  if(s.coding.active?.kind==='coding')return result(false,'The current contract uses the production lane.');
  const requests:Array<PipelineRequest>=Array.from({length:4},(_,i)=>({id:i,stage:'Section',role:'coder',group:i,model,revision:q.revision!,access:q.access!,workload:q.snapshot!.workload/4,duration:q.duration/4,cost:q.cost/4,vram:q.vram,snapshot:{...q.snapshot!,fee:MODELS.find(m=>m.id===model)!.cost?q.snapshot!.fee:q.cost/4,workload:q.snapshot!.workload/4},status:'pending',delegated:false,context:4000}));
- const summary=summarize(s,requests,q.payout,0);const p=makePipeline(s,'content',s.business,summary,q.cost);p.id+=`-${s.coding.content.length}-${s.jobs.length}`;if(s.coding.active)s.coding.content.push(p);else s.coding.active=p;pumpPipeline(s);return result(true,'Long-form sections queued.');
+ const summary={...summarize(s,requests,q.payout,0),quantized:q.quantized};const p=makePipeline(s,'content',s.business,summary,q.cost);p.id+=`-${s.coding.content.length}-${s.jobs.length}`;if(s.coding.active)s.coding.content.push(p);else s.coding.active=p;pumpPipeline(s);return result(true,'Long-form sections queued.');
 }
 export function pumpPipeline(s:GameState){
  for(const p of [s.coding.active,...s.coding.content].filter((p):p is WorkPipeline=>!!p))pumpOne(s,p);

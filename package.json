@@ -1,5 +1,5 @@
 {
   "name": "bedroom-agi", "version": "1.0.0", "private": true, "type": "module",
-  "scripts": { "dev": "vite --host 127.0.0.1", "build": "tsc --noEmit && vite build && node scripts/standalone.mjs", "preview": "node scripts/server.mjs", "test": "tsx --test tests/*.test.ts", "test:browser": "tsx scripts/browser-qa.mjs", "test:art": "node scripts/art-qa.mjs", "balance": "tsx scripts/balance.ts" },
+  "scripts": { "dev": "vite --host 127.0.0.1", "build": "tsc --noEmit && vite build && node scripts/standalone.mjs", "preview": "node scripts/server.mjs", "test": "tsx --test tests/*.test.ts", "test:browser": "tsx scripts/browser-qa.mjs", "test:art": "node scripts/art-qa.mjs", "balance": "tsx scripts/balance.ts", "balance:career": "tsx scripts/career-balance.ts" },
   "devDependencies": { "vite": "^6.1.0", "typescript": "^5.7.3", "tsx": "^4.19.3", "@types/node": "^22.13.0", "playwright": "^1.51.0" }
 }

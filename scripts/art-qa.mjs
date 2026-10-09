@@ -79,13 +79,14 @@ try{
  assert.equal(JSON.parse(await standalone.evaluate(()=>window.render_game_to_text())).room.workerPanes,4);
  await standalone.waitForFunction(()=>Array.from(document.images).every(i=>i.complete&&i.naturalWidth>0));
  const artwork=await standalone.locator('img').evaluateAll(images=>images.map(i=>({ready:i.complete&&i.naturalWidth>0,source:i.currentSrc})));
- assert.equal(await standalone.locator('.model-card img').count(),16,'Every model icon should be mounted');
+ assert.equal(await standalone.locator('.model-card img').count(),21,'Every model icon should be mounted');
+ assert.equal(await standalone.locator('.coding-card img').count(),6,'Every coding job needs its generated illustration');
  assert.equal(await standalone.locator('.hardware-row img').count(),6,'Every hardware icon should be mounted');
  assert.equal(await standalone.locator('.claw-banner img').count(),1,'SlopClaw icon should be mounted');
  assert.equal(await standalone.locator('.project-card img').count(),6,'Every project needs its generated illustration');
  assert.equal(await standalone.locator('.keepsake img').count(),6,'Every completed project needs a collection keepsake');
- assert.equal(artwork.length,35,'Catalogue icons and project collection copies must all be present');
- assert.equal(new Set(artwork.map(a=>a.source)).size,29,'The 23 catalogue and six project illustrations must be distinct');
+ assert.ok(artwork.length>=46,'Catalogue icons, coding work and project collection copies must all be present');
+ assert.equal(new Set(artwork.map(a=>a.source)).size,40,'All model, hardware, SlopClaw, coding and project illustrations must be distinct');
  assert.equal(await standalone.locator('.business-card').count(),8);
  assert.ok(artwork.every(a=>a.ready&&a.source.startsWith('data:')),'All illustrated icons must be embedded and decoded');
  assert.deepEqual(external,[]);await embeddedContext.close();

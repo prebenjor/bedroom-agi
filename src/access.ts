@@ -24,8 +24,8 @@ export function quotaMetrics(s:GameState,model:string,mode?:AccessMode){
 }
 export interface Revision {id:string;model:string;week:number;speed:number;payout:number;fee:number;coding:number;context:number}
 export const REVISIONS:Revision[]=[
- ...['gpt','claude-sonnet','gemini-flash'].map(model=>({id:`${model}-r2`,model,week:2,speed:1.08,payout:1.12,fee:1.15,coding:4,context:1.25})),
- ...['gpt-boardroom','claude','local-32b'].map(model=>({id:`${model}-r4`,model,week:4,speed:1.12,payout:1.18,fee:model==='local-32b'?1:1.2,coding:5,context:1.5}))
+ ...['gpt','claude-sonnet','gemini-flash'].map(model=>({id:`${model}-r2`,model,week:2,speed:1.04,payout:1.04,fee:1.15,coding:4,context:1.25})),
+ ...['gpt-boardroom','claude','local-32b'].map(model=>({id:`${model}-r4`,model,week:4,speed:1.04,payout:1.06,fee:model==='local-32b'?1:1.2,coding:5,context:1.5}))
 ];
 export function revisionMetrics(s:GameState,model:string,id=s.access.selectedRevisions[model]??'original'){
  const r=REVISIONS.find(r=>r.id===id&&r.model===model),m=MODELS.find(m=>m.id===model);

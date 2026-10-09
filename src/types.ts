@@ -23,7 +23,7 @@ export type CodingRole='coordinator'|'coder'|'tester'|'reviewer';
 export interface RoleAssignment {model:string;revision?:string;access?:AccessMode}
 export type RequestStage='Brief'|'Build'|'Review'|'Test'|'Fix'|'Deliver'|'Section'|'Coordinate';
 export interface PipelineRequest {id:number;stage:RequestStage;role:CodingRole;group:number;model:string;revision:string;access:AccessMode;workload:number;duration:number;cost:number;vram:number;snapshot:FinancialSnapshot;status:'pending'|'running'|'done';delegated:boolean;context:number}
-export interface WorkPipeline {id:string;kind:'coding'|'content';work:string;payout:number;requests:PipelineRequest[];budget:number;spent:number;repairs:number;helpers:number;delegation:'budget'|'parallel'|null;pause:string;acceptedAt:number}
+export interface WorkPipeline {id:string;kind:'coding'|'content';work:string;payout:number;quantized?:boolean;requests:PipelineRequest[];budget:number;spent:number;repairs:number;helpers:number;delegation:'budget'|'parallel'|null;pause:string;acceptedAt:number}
 export interface CodingState {recovery:boolean;content:WorkPipeline[];selected:string|null;roles:Record<CodingRole,RoleAssignment|null>;active:WorkPipeline|null;approvedBudget:number|null;lastReport:{work:string;payout:number;fees:number;repairs:number;helpers:number;seconds:number}|null}
 export interface Career {completed:number;byJob:Record<string,number>}
 export interface DelegationOptions {mode:'budget'|'parallel';helpers:RoleAssignment[]}
