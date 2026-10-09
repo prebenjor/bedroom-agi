@@ -17,7 +17,8 @@ function validateAccess(s:GameState){
 function validateCoding(s:GameState){
  const c=s.coding,career=s.career;
  if(!record(c)||!record(career)||!Number.isInteger(career.completed)||!bounded(career.completed)||!record(career.byJob)||Object.entries(career.byJob).some(([id,n])=>!CODING_JOBS.some(j=>j.id===id)||!Number.isInteger(n)||!bounded(n))||Object.values(career.byJob).reduce((n,x)=>n+x,0)!==career.completed)return false;
- if(c.selected!==null&&!CODING_JOBS.some(j=>j.id===c.selected)||typeof c.recovery!=='boolean'||!record(c.roles)||!Array.isArray(c.content)||c.content.length>4||c.approvedBudget!==null&&!bounded(c.approvedBudget))return false;
+ // Retained paused contracts do not occupy workers; only s.jobs has a worker cap.
+ if(c.selected!==null&&!CODING_JOBS.some(j=>j.id===c.selected)||typeof c.recovery!=='boolean'||!record(c.roles)||!Array.isArray(c.content)||c.approvedBudget!==null&&!bounded(c.approvedBudget))return false;
  const validAssignment=(a:any)=>record(a)&&MODELS.some(m=>m.id===a.model&&m.tier!=='visual')&&(a.revision===undefined||typeof a.revision==='string'&&revisionMetrics(s,a.model,a.revision).available)&&(a.access===undefined||['chat','api','local'].includes(a.access))&&(!a.access||a.access==='local'===!!MODELS.find(m=>m.id===a.model)!.vram);
  if(CODING_ROLES.some(role=>c.roles[role]!==null&&!validAssignment(c.roles[role]))||Object.keys(c.roles).some(role=>!CODING_ROLES.includes(role as any)))return false;
  if(c.lastReport!==null){const r=c.lastReport;if(!record(r)||!CODING_JOBS.some(j=>j.id===r.work)&&!LONG_FORM.includes(r.work)||['payout','fees','seconds','repairs','helpers'].some(k=>!bounded((r as any)[k]))||!Number.isInteger(r.repairs)||r.repairs>2||!Number.isInteger(r.helpers)||r.helpers>3)return false;}

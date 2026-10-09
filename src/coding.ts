@@ -68,11 +68,12 @@ export function codingQuote(s:GameState,id=s.coding.selected??'bug-fixes'):Pipel
  const testFactor=Math.max(.55,1+(job.difficulty-tester.codingScore)/100)*testing;
  const memory=s.claw&&has(s,'memory')&&(s.career.byJob[id]??0)>0?.5:1,cache=s.claw&&has(s,'cache')?.7:1;
  let group=0;const requests:PipelineRequest[]=[];
- const add=(stage:PipelineRequest['stage'],role:CodingRole,share:number,workShare=share)=>{requests.push(request(s,roles[role],stage,role,group++,job.duration*share,job.scale*workShare,role==='coder'?job.context:Math.min(job.context,8000)));};
+ const add=(stage:PipelineRequest['stage'],role:CodingRole,share:number,workShare=share)=>{requests.push(request(s,roles[role],stage,role,group++,job.duration*share,job.scale*workShare,stage==='Build'||stage==='Fix'?job.context:Math.min(job.context,8000)));};
  add('Brief','coordinator',.12*memory,.12*memory);add('Build','coder',.48*cache,.48*cache);
  if(review)add('Review','reviewer',.1);
  add('Test','tester',.22*testFactor,.22);
- for(let i=0;i<repairs;i++){const fixRole=s.claw&&has(s,'retries')&&tester.codingScore>coder.codingScore?'tester':'coder';add('Fix',fixRole,.2*testFactor*(s.claw&&has(s,'retries')?.75:1),.2*(s.claw&&has(s,'retries')?.75:1));add('Test','tester',.15*testFactor,.15);}
+ const fixRole=s.claw&&has(s,'retries')&&tester.codingScore>coder.codingScore&&roleQuote(s,'tester',roles.tester,job.context).available?'tester':'coder';
+ for(let i=0;i<repairs;i++){add('Fix',fixRole,.2*testFactor*(s.claw&&has(s,'retries')?.75:1),.2*(s.claw&&has(s,'retries')?.75:1));add('Test','tester',.15*testFactor,.15);}
  add('Deliver','coordinator',.08);
  requests.forEach((r,i)=>r.id=i);
  const base=quote(s,roles.coder.model,'seo',{revision:coder.id,access:roles.coder.access,coding:true});
@@ -213,6 +214,6 @@ export function codingAction(s:GameState,a:CodingAction):Result{
  if(a.type==='code-accept')return acceptCoding(s,a.budget);
  if(a.type==='work-content'){s.coding.selected=null;return result(true,'Content selected.');}
  if(a.type==='code-role'){if(!CODING_ROLES.includes(a.role))return result(false,'Unknown role.');if(a.assignment){const q=roleQuote(s,a.role,a.assignment);if(!q.available)return result(false,q.reason);}s.coding.roles[a.role]=a.assignment?{...a.assignment,revision:revisionMetrics(s,a.assignment.model,a.assignment.revision).id,access:modelAccess(s,a.assignment.model,a.assignment.access)}:null;return result(true,'Role assigned for the next contract.');}
- if(a.type==='code-budget'){if(!s.coding.active||!Number.isFinite(a.budget)||a.budget<s.coding.active.spent)return result(false,'Budget must cover fees already spent.');s.coding.recovery=false;s.coding.active.budget=a.budget;s.coding.approvedBudget=a.budget;pumpPipeline(s);return result(true,'Job budget approved.');}
+ if(a.type==='code-budget'){if(!s.coding.active||!Number.isFinite(a.budget)||a.budget<s.coding.active.spent)return result(false,'Budget must cover fees already spent.');s.coding.recovery=false;s.coding.active.budget=a.budget;if(s.coding.active.kind==='coding'&&s.coding.active.work===s.coding.selected&&s.coding.approvedBudget!==null)s.coding.approvedBudget=a.budget;pumpPipeline(s);return result(true,'Job budget approved.');}
  return result(false,'That pipeline action is not available.');
 }

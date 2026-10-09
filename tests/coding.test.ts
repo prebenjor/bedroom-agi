@@ -164,3 +164,39 @@ test('missing coding fields in v1 save migrate without rewriting existing jobs',
  assert.deepEqual(restored.jobs,jobs);assert.equal((restored as any).career.completed,0);
  assert.equal((restored as any).coding.active,null);
 });
+
+test('raising an old job budget cannot approve a newly selected coding work type',()=>{
+ const s=ready();s.claw=true;s.auto=true;s.career={completed:1,byJob:{'bug-fixes':1}};
+ dispatch(s,{type:'code-select',id:'bug-fixes'});dispatch(s,{type:'code-accept',budget:0});
+ const old=s.coding.active!.id;dispatch(s,{type:'code-select',id:'small-scripts'});
+ assert.equal(dispatch(s,{type:'code-budget',budget:100}).ok,true);assert.equal(s.coding.active!.id,old);assert.equal(s.coding.approvedBudget,null);
+ const restored=decodeSave(encodeSave(s,0),0)!.state;advance(restored,300);
+ assert.equal(restored.coding.lastReport!.work,'bug-fixes');assert.equal(restored.coding.active,null);assert.equal(restored.career.completed,2);
+ const spent=restored.expenses;advance(restored,100);assert.equal(restored.expenses,spent);
+ assert.equal(dispatch(restored,{type:'code-accept'}).ok,true);assert.equal(restored.coding.active!.work,'small-scripts');
+});
+
+test('accepting coding retains a paused ebook plus four running ebook pipelines in saves',()=>{
+ const s=ready();s.model='claude-sonnet';s.business='ebooks';s.workers=4;
+ assert.equal(dispatch(s,{type:'generate'}).ok,true);const paused=s.coding.active!;
+ dispatch(s,{type:'code-budget',budget:paused.spent});advance(s,s.jobs[0].remaining+.25);assert.equal(s.jobs.length,0);
+ assert.match(paused.pause,/budget/);
+ for(let i=0;i<4;i++)assert.equal(dispatch(s,{type:'generate'}).ok,true);
+ assert.equal(s.coding.content.length,4);assert.ok(decodeSave(encodeSave(s,0),0));
+ const sent=structuredClone(s.jobs),spent=s.expenses;
+ dispatch(s,{type:'code-select',id:'bug-fixes'});assert.equal(dispatch(s,{type:'code-accept'}).ok,true);
+ assert.equal(s.coding.content.length,5);assert.deepEqual(s.jobs,sent);assert.equal(s.expenses,spent);
+ const restored=decodeSave(encodeSave(s,0),0);assert.ok(restored);assert.deepEqual(restored.state.coding.content.find(p=>p.id===paused.id),paused);
+ advance(restored.state,1000);assert.equal(restored.state.career.completed,1);assert.ok(decodeSave(encodeSave(restored.state,0),0));
+});
+
+test('repository Fix stages retain full context and retries choose only a capable tester',()=>{
+ const s=ready();s.model='gemini';s.claw=true;s.harness=['retries'];s.gpu='big';s.career={completed:6,byJob:{'bug-fixes':6}};
+ assert.equal(dispatch(s,{type:'code-role',role:'tester',assignment:{model:'local-32b',access:'local'}}).ok,true);
+ dispatch(s,{type:'code-select',id:'internal-tools'});const q=coding.codingQuote(s);assert.equal(q.available,true);
+ const fixes=q.requests.filter(r=>r.stage==='Fix');assert.equal(fixes.length,2);
+ for(const fix of fixes){assert.equal(fix.model,'gemini');assert.equal(fix.context,64000);}
+ assert.ok(q.requests.filter(r=>r.stage==='Test').every(r=>r.model==='local-32b'&&r.context===8000));
+ s.harness.push('context');const capable=coding.codingQuote(s);assert.equal(capable.available,true);
+ for(const fix of capable.requests.filter(r=>r.stage==='Fix')){assert.equal(fix.model,'local-32b');assert.equal(fix.context,64000);}
+});
