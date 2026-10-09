@@ -1,4 +1,5 @@
-import {createGame,advance,dispatch,quote,income,prestigeQuote} from '../src/engine';
+import {createGame,advance,dispatch,quote,prestigeQuote} from '../src/engine';
+import {projectedIncome} from '../src/presentation';
 import {MODELS,BUSINESSES,GPUS,UPGRADES,HARNESS,PERKS,WORKER_PRICES} from '../src/content';
 import type {GameState,Action} from '../src/types';
 import {fileURLToPath} from 'node:url';
@@ -9,8 +10,10 @@ export function bestSetup(s:GameState,strategy:Strategy){
   if(strategy==='cloud'&&m.vram)continue;
   if(strategy==='local'&&!m.vram&&m.id!=='starter')continue;
   const q=quote(s,m.id,b.id);if(!q.available||q.cost>s.cash)continue;
-  const slots=q.vram?Math.min(s.workers,Math.floor((GPUS.find(g=>g.id===s.gpu)?.vram??0)/q.vram)):s.workers;
-  const net=q.net*slots;if(net>best.net)best={model:m.id,business:b.id,net};
+  // Evaluate only the proposed manual setup, with each worker paying its request
+  // and reserving memory before the next. Fallback may violate cloud/local strategy.
+  const candidate={...s,model:m.id,business:b.id,routing:'manual' as const,jobs:[],harness:s.harness.filter(id=>id!=='fallback')};
+  const net=projectedIncome(candidate).net;if(net>best.net)best={model:m.id,business:b.id,net};
  }
  return best;
 }
@@ -36,13 +39,13 @@ export function manage(s:GameState,strategy:Strategy='mixed'){
 }
 export function simulate(strategy:Strategy='mixed'){
  const s=createGame();dispatch(s,{type:'generate'});advance(s,20);dispatch(s,{type:'generate'});advance(s,20);dispatch(s,{type:'auto'});
- const runs:number[]=[],claw:number[]=[],models=new Set<string>(),checkpoints:GameState[]=[];
+ const runs:number[]=[],claw:number[]=[],models=new Set<string>(),businesses=new Set<string>(),checkpoints:GameState[]=[];
  let clawRecorded=false;
  for(let checks=0;checks<600;checks++){
-  manage(s,strategy);models.add(s.model);if(s.claw&&!clawRecorded){claw.push(Math.round(s.seconds/60));clawRecorded=true;}
+  manage(s,strategy);models.add(s.model);businesses.add(s.business);if(s.claw&&!clawRecorded){claw.push(Math.round(s.seconds/60));clawRecorded=true;}
   if(prestigeQuote(s).eligible){runs.push(Math.round(s.seconds/60));checkpoints.push(structuredClone(s));dispatch(s,{type:'prestige'});clawRecorded=false;if(runs.length===3)break;manage(s,strategy);}
   advance(s,180);
  }
- return {strategy,runs,claw,models:[...models],state:s,checkpoints};
+ return {strategy,runs,claw,models:[...models],businesses:[...businesses],state:s,checkpoints};
 }
 if(process.argv[1]===fileURLToPath(import.meta.url))for(const strategy of ['cloud','local','mixed'] as const){const {state,checkpoints,...report}=simulate(strategy);console.log(JSON.stringify({...report,ending:state.ending,cash:Math.round(state.cash)},null,2));}

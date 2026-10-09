@@ -1,9 +1,16 @@
-import {MODELS,UPGRADES} from './content';
+import {MODELS,BUSINESSES,UPGRADES} from './content';
 import {capacity,chooseModel,has,quote} from './engine';
 import type {GameState,Quote,Upgrade} from './types';
 
 export type ProductionKind='manual-ready'|'manual-running'|'automatic-running'|'waiting-for-vram'|'paused';
 export interface ProductionStatus {kind:ProductionKind;reason:string;recoverable:boolean;model:string;quote:Quote}
+
+export function agentSummary(s:GameState){
+ const local=s.jobs.filter(j=>j.vram>0).length;
+ return {local,cloud:s.jobs.length-local,idle:s.workers-s.jobs.length,
+  usedVRAM:s.jobs.reduce((sum,j)=>sum+j.vram,0),capacity:capacity(s),
+  models:[...new Set(s.jobs.map(j=>MODELS.find(m=>m.id===j.model)!.name))]};
+}
 
 // Match next-job routing and fallback without starting work or touching the RNG.
 function nextSetup(s:GameState,freeVRAM=capacity(s)){
@@ -20,11 +27,11 @@ export function productionStatus(s:GameState):ProductionStatus {
  const freeVRAM=capacity(s)-s.jobs.reduce((sum,j)=>sum+j.vram,0),next=nextSetup(s,freeVRAM);
  const occupied=s.jobs.length,hasFreeWorker=occupied<s.workers;
  if(hasFreeWorker&&next.quote.available&&next.quote.cost<=s.cash&&next.quote.vram>freeVRAM)
-  return {...next,kind:'waiting-for-vram',reason:'Your card is busy. Another local job will start when there’s room.',recoverable:false};
- if(occupied)return {...next,kind:s.auto?'automatic-running':'manual-running',reason:s.auto?'Running automatically.':'Your content sells when the job finishes.',recoverable:false};
+  return {...next,kind:'waiting-for-vram',reason:'The card is full. Waiting for a local job to finish.',recoverable:false};
+ if(occupied)return {...next,kind:s.auto?'automatic-running':'manual-running',reason:s.auto?'Automatic production is on.':'Work is in progress.',recoverable:false};
  if(!next.quote.available)return {...next,kind:'paused',reason:next.quote.reason,recoverable:true};
- if(next.quote.cost>s.cash)return {...next,kind:'paused',reason:'You can’t afford the next request. Use the free chatbot and SEO articles to recover.',recoverable:true};
- return {...next,kind:s.auto?'automatic-running':'manual-ready',reason:s.auto?'Running automatically.':'Generate a job. It sells automatically when it’s done.',recoverable:false};
+ if(next.quote.cost>s.cash)return {...next,kind:'paused',reason:'Not enough cash for a request. The free chatbot can still make SEO articles.',recoverable:true};
+ return {...next,kind:s.auto?'automatic-running':'manual-ready',reason:s.auto?'Automatic production is on.':'Ready to generate.',recoverable:false};
 }
 
 export function projectedIncome(s:GameState){
@@ -42,7 +49,7 @@ export function projectedIncome(s:GameState){
 export function upgradePreview(s:GameState,id:string){
  const u=UPGRADES.find(u=>u.id===id);if(!u)return {gain:0,reserveReason:''};
  const preview={...s,cash:s.cash-u.cost,upgrades:[...s.upgrades,u.id]},next=nextSetup(preview);
- const reserveReason=u.cost<=s.cash&&next.quote.available&&next.quote.cost>preview.cash?'Leaves too little cash for the next request.':'';
+ const reserveReason=u.cost<=s.cash&&next.quote.available&&next.quote.cost>preview.cash?'You’ll need more cash to run a request after buying this.':'';
  return {gain:projectedIncome(preview).net-projectedIncome(s).net,reserveReason};
 }
 
@@ -59,7 +66,8 @@ export function suggestedUpgrades(s:GameState):Upgrade[]{
 }
 
 export function modelPreview(s:GameState,id:string){
- const q=quote(s,id,s.business),current=nextSetup(s).quote;
+ const q=quote(s,id,s.business),current=nextSetup(s).quote,m=MODELS.find(m=>m.id===id)!;
  return {quote:q,delta:q.available?q.net-(current.available?current.net:0):0,
+  specialties:m.specialties.map(id=>BUSINESSES.find(b=>b.id===id)!.name),
   clearsRouting:s.claw&&has(s,'routing')&&s.routing!=='manual'};
 }

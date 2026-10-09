@@ -1,0 +1,54 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "transparent_background": true,
+  "assets": [
+    {
+      "id": "gpt-mini",
+      "prompt": "Use case: stylized-concept. Asset: ONE individual transparent model badge for the Bedroom AGI game. Use the input only as a visual-family and ink/gouache style reference. Textured pen-and-ink outlines, worn painted materials, muted warm colours, brass details, warm lamp highlights at front-left and a subtle cool blue right rim. One centered object filling about 80% of square image. Design must read clearly at 48px. Transparent background, clean alpha edges. No floor, scene, lettering, text, numbers, price tags, watermark, surrounding UI or extra decorative objects. Do not reproduce a real corporate logo. A cheap compact version of the reference green mechanical-loop badge: three simplified overlapping pine-green enamel loops around one amber dot, thinner stamped brass edging and a charcoal plastic backing. Same fictional product family, visibly budget construction, no official logo.",
+      "reference": "src/assets/icons/gpt.webp",
+      "original": "originals/gpt-mini.png"
+    },
+    {
+      "id": "gpt-boardroom",
+      "prompt": "Use case: stylized-concept. Asset: ONE individual transparent model badge for the Bedroom AGI game. Use the input only as a visual-family and ink/gouache style reference. Textured pen-and-ink outlines, worn painted materials, muted warm colours, brass details, warm lamp highlights at front-left and a subtle cool blue right rim. One centered object filling about 80% of square image. Design must read clearly at 48px. Transparent background, clean alpha edges. No floor, scene, lettering, text, numbers, price tags, watermark, surrounding UI or extra decorative objects. Do not reproduce a real corporate logo. An expensive executive version of the reference green mechanical-loop badge: three substantial glossy dark pine-green loops around a glowing amber dot, heavy polished brass edging, backed by a broad gold shield shaped like a small executive briefcase. Same fictional product family, overpriced boardroom luxury, no crown and no official logo.",
+      "reference": "src/assets/icons/gpt.webp",
+      "original": "originals/gpt-boardroom.png"
+    },
+    {
+      "id": "claude-sonnet",
+      "prompt": "Use case: stylized-concept. Asset: ONE individual transparent model badge for the Bedroom AGI game. Use the input only as a visual-family and ink/gouache style reference. Textured pen-and-ink outlines, worn painted materials, muted warm colours, brass details, warm lamp highlights at front-left and a subtle cool blue right rim. One centered object filling about 80% of square image. Design must read clearly at 48px. Transparent background, clean alpha edges. No floor, scene, lettering, text, numbers, price tags, watermark, surrounding UI or extra decorative objects. Do not reproduce a real corporate logo. A smaller sibling of the reference orange sun badge: six rounded burnt-orange enamel petals around a warm amber circular lens, scuffed cream and brass central ring, compact handmade mechanical flower. Same fictional product family, simpler silhouette than the elaborate sun reference.",
+      "reference": "src/assets/icons/claude.webp",
+      "original": "originals/claude-sonnet.png"
+    },
+    {
+      "id": "gemini-ultra",
+      "prompt": "Use case: stylized-concept. Asset: ONE individual transparent model badge for the Bedroom AGI game. Use the input only as a visual-family and ink/gouache style reference. Textured pen-and-ink outlines, worn painted materials, muted warm colours, brass details, warm lamp highlights at front-left and a subtle cool blue right rim. One centered object filling about 80% of square image. Design must read clearly at 48px. Transparent background, clean alpha edges. No floor, scene, lettering, text, numbers, price tags, watermark, surrounding UI or extra decorative objects. Do not reproduce a real corporate logo. A premium sibling of the reference blue-and-gold four-point star badge: strong four-point cobalt and amber enamel star, thicker weathered brass edges, framed by a single offset blue crescent with gold trim. Same fictional product family, clear star silhouette.",
+      "reference": "src/assets/icons/gemini.webp",
+      "original": "originals/gemini-ultra.png"
+    },
+    {
+      "id": "deepseek",
+      "prompt": "Use case: stylized-concept. Asset: ONE individual transparent model badge for the Bedroom AGI game. Use the input only as a visual-family and ink/gouache style reference. Textured pen-and-ink outlines, worn painted materials, muted warm colours, brass details, warm lamp highlights at front-left and a subtle cool blue right rim. One centered object filling about 80% of square image. Design must read clearly at 48px. Transparent background, clean alpha edges. No floor, scene, lettering, text, numbers, price tags, watermark, surrounding UI or extra decorative objects. Do not reproduce a real corporate logo. An original fictional model badge resembling a small cobalt blue mechanical diving helmet. One round dark navy glass porthole with a warm amber light, worn brass faceplate and two broad side fittings. Compact sturdy silhouette, no official whale or recognizable company logo.",
+      "reference": "src/assets/icons/gemini.webp",
+      "original": "originals/deepseek.png"
+    },
+    {
+      "id": "midjourney",
+      "prompt": "Use case: stylized-concept. Asset: ONE individual transparent model badge for the Bedroom AGI game. Use the input only as a visual-family and ink/gouache style reference. Textured pen-and-ink outlines, worn painted materials, muted warm colours, brass details, warm lamp highlights at front-left and a subtle cool blue right rim. One centered object filling about 80% of square image. Design must read clearly at 48px. Transparent background, clean alpha edges. No floor, scene, lettering, text, numbers, price tags, watermark, surrounding UI or extra decorative objects. Do not reproduce a real corporate logo. An original fictional image-model badge: a chipped cream-and-amber sunset medallion framed by a worn dark teal photographic slide frame, with one thick ochre paintbrush crossing diagonally behind it. One unified pictorial emblem, readable silhouette, no official sailboat or company logo.",
+      "reference": "src/assets/icons/claude.webp",
+      "original": "originals/midjourney.png"
+    },
+    {
+      "id": "sora",
+      "prompt": "Use case: stylized-concept. Asset: ONE individual transparent model badge for the Bedroom AGI game. Use the input only as a visual-family and ink/gouache style reference. Textured pen-and-ink outlines, worn painted materials, muted warm colours, brass details, warm lamp highlights at front-left and a subtle cool blue right rim. One centered object filling about 80% of square image. Design must read clearly at 48px. Transparent background, clean alpha edges. No floor, scene, lettering, text, numbers, price tags, watermark, surrounding UI or extra decorative objects. Do not reproduce a real corporate logo. An original fictional video-model badge shaped like a battered teal film camera in side three-quarter view. Two broad cream film-reel circles on top, a chunky brass lens at the front and one small red tally light. This is a compact enamel product emblem, no lettering or official company logo.",
+      "reference": "src/assets/icons/gpt.webp",
+      "original": "originals/sora.png"
+    },
+    {
+      "id": "local-32b",
+      "prompt": "Use case: stylized-concept. Asset: ONE individual transparent model badge for the Bedroom AGI game. Use the input only as a visual-family and ink/gouache style reference. Textured pen-and-ink outlines, worn painted materials, muted warm colours, brass details, warm lamp highlights at front-left and a subtle cool blue right rim. One centered object filling about 80% of square image. Design must read clearly at 48px. Transparent background, clean alpha edges. No floor, scene, lettering, text, numbers, price tags, watermark, surrounding UI or extra decorative objects. Do not reproduce a real corporate logo. A larger sibling of the reference portable local-model machine: three vertically stacked scuffed olive-green metal modules, each with one broad brass fan grille, connected by short practical black cables, one thick carrying handle. Bigger and more cumbersome than the two-module reference, coherent assembled computer equipment, strong readable silhouette.",
+      "reference": "src/assets/icons/local-14b.webp",
+      "original": "originals/local-32b.png"
+    }
+  ]
+}

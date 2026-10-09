@@ -1,5 +1,5 @@
 export type Routing = 'manual' | 'cheapest' | 'margin' | 'local';
-export interface Model {id:string; name:string; company:string; tag:string; description:string; speed:number; value:number; cost:number; quality:number; vram:number; unlock:number}
+export interface Model {id:string; name:string; company:string; tag:string; description:string; specialties:string[]; fit?:Partial<Record<string,{speed:number;payout:number}>>; speed:number; value:number; cost:number; quality:number; vram:number; unlock:number}
 export interface Business {id:string; name:string; icon:string; description:string; payout:number; duration:number; scale:number; quality:number; unlock:number}
 export interface GPU {id:string; name:string; description:string; cost:number; vram:number; speed:number; watts:number}
 export interface Upgrade {id:string; name:string; description:string; cost:number; kind:'speed'|'pay'|'cool'|'reach'; rank:number}

@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "savedAt": 100000,
+  "state": {
+    "version": 1,
+    "cash": 9990.52534343127,
+    "slop": 20,
+    "totalSlop": 35,
+    "runEarned": 7000,
+    "totalEarned": 12000,
+    "expenses": 9.474656568727715,
+    "totalExpenses": 9.474656568727715,
+    "seconds": 123,
+    "totalSeconds": 456,
+    "fraction": 0,
+    "model": "local-7b",
+    "business": "linkedin",
+    "gpu": "mid",
+    "heat": 25,
+    "auto": false,
+    "claw": true,
+    "workers": 2,
+    "routing": "manual",
+    "upgrades": [
+      "speed-0",
+      "pay-0"
+    ],
+    "harness": [],
+    "perks": [],
+    "jobs": [
+      {
+        "worker": 0,
+        "model": "gpt",
+        "business": "linkedin",
+        "remaining": 4,
+        "duration": 40.13377926421405,
+        "payout": 56.160000000000004,
+        "cost": 7.7,
+        "vram": 0
+      },
+      {
+        "worker": 1,
+        "model": "local-7b",
+        "business": "linkedin",
+        "remaining": 6,
+        "duration": 39.802095138063514,
+        "payout": 46.8,
+        "cost": 1.7746565687277147,
+        "vram": 6
+      }
+    ],
+    "prestige": 0,
+    "valuation": 0,
+    "totalValuation": 0,
+    "ending": false,
+    "discovered": [
+      "event-0"
+    ],
+    "feed": [
+      {
+        "at": 456,
+        "text": "The old run has earned its own history.",
+        "kind": "job"
+      },
+      {
+        "at": 450,
+        "text": "Installed the 8 GB rig.",
+        "kind": "purchase"
+      }
+    ],
+    "seed": 314159,
+    "nextEvent": 300,
+    "event": null,
+    "eventLeft": 0,
+    "notice": "Two legacy jobs are already paid for.",
+    "muted": true,
+    "reducedMotion": false
+  }
+}

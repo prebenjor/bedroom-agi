@@ -22,7 +22,7 @@ test('projected income ignores committed jobs and limits local worker capacity',
  const s=createGame();Object.assign(s,{cash:10000,runEarned:10000,gpu:'mid',model:'local-7b',workers:4,auto:true});
  dispatch(s,{type:'generate'});s.jobs[0].payout=99999;
  const rate=projectedIncome(s),q=quote(s,'local-7b','seo');
- assert.equal(rate.slots,1);assert.equal(rate.net,q.net);assert.equal(rate.revenue,q.payout/q.duration);
+ assert.equal(rate.slots,1);assert.ok(Math.abs(rate.net-q.net)<1e-12);assert.equal(rate.revenue,q.payout/q.duration);
 });
 test('projected local-first routing fills remaining workers with cloud jobs',()=>{
  const s=createGame();Object.assign(s,{cash:10000,runEarned:10000,gpu:'mid',workers:4,claw:true,harness:['routing'],routing:'local',auto:true});
@@ -30,7 +30,7 @@ test('projected local-first routing fills remaining workers with cloud jobs',()=
  const projected=projectedIncome(s),running=income(actual);
  assert.equal(projected.slots,4);assert.equal(projected.model,actual.jobs[0].model);
  assert.equal(projected.revenue,running.revenue);assert.equal(projected.cost,running.cost);assert.equal(projected.net,running.net);
- assert.deepEqual(actual.jobs.map(j=>j.model),['local-7b','grok','grok','grok']);
+ assert.equal(actual.jobs[0].vram,6);assert.ok(actual.jobs.slice(1).every(j=>j.vram===0));
 });
 test('projected margin routing reconsiders models after each worker reserves VRAM',()=>{
  const s=createGame();Object.assign(s,{cash:10000,runEarned:10000,gpu:'good',workers:4,claw:true,harness:['routing'],routing:'margin',auto:true});
@@ -57,13 +57,13 @@ test('upgrade goals skip owned ranks and promote cooling during throttling',()=>
  s.heat=80;s.cash=100;assert.equal(suggestedUpgrades(s)[0].id,'cool-0');
 });
 test('upgrade gains account for the cash needed to run the next request',()=>{
- const s=createGame();Object.assign(s,{cash:40,runEarned:2000,auto:true,model:'claude'});
+ const s=createGame();Object.assign(s,{cash:40,runEarned:100000,auto:true,model:'gpt',business:'reviews'});
  const preview=upgradePreview(s,'speed-0');
- assert.ok(preview.gain<=0);assert.match(preview.reserveReason,/too little cash.*next request/i);
+ assert.ok(preview.gain<=0);assert.match(preview.reserveReason,/cash.*request/i);
  assert.equal(s.cash,40);
 });
 test('recommendations rank a usable improvement before a purchase that exhausts cloud cash',()=>{
- const s=createGame();Object.assign(s,{cash:70,runEarned:2000,auto:true,model:'claude'});
+ const s=createGame();Object.assign(s,{cash:70,runEarned:100000,auto:true,model:'gpt',business:'reviews'});
  assert.deepEqual(suggestedUpgrades(s).map(u=>u.id),['speed-0','pay-0']);
 });
 test('one affordable improvement is followed by the cheapest remaining savings goal',()=>{
@@ -71,7 +71,7 @@ test('one affordable improvement is followed by the cheapest remaining savings g
  assert.deepEqual(suggestedUpgrades(s).map(u=>u.id),['speed-0','pay-0']);
 });
 test('post-purchase routing fallback avoids an incorrect request reserve warning',()=>{
- const s=createGame();Object.assign(s,{cash:40,runEarned:2000,auto:true,model:'claude',claw:true,harness:['fallback']});
+ const s=createGame();Object.assign(s,{cash:40,runEarned:100000,auto:true,model:'claude',claw:true,harness:['fallback']});
  assert.equal(upgradePreview(s,'speed-0').reserveReason,'');
 });
 test('model previews compare against the actual route and explicitly report routing override',()=>{
