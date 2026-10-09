@@ -9,7 +9,7 @@ const raw=readFileSync(new URL('./fixtures/legacy-v1.json',import.meta.url),'utf
 test('a literal pre-expansion save decodes without rewriting cash, feed or committed jobs',()=>{
  const old=JSON.parse(raw).state,decoded=decodeSave(raw,100000);
  assert.ok(decoded);assert.equal(decoded.offlineSeconds,0);
- const {projects,calendarSeconds,access,...preserved}=decoded.state;assert.equal(calendarSeconds,0);assert.equal(access.apiUnlocked,true);assert.deepEqual(preserved,old);assert.deepEqual(projects,{active:null,completed:[]});
+ const {projects,calendarSeconds,access,coding,career,...preserved}=decoded.state;assert.equal(calendarSeconds,0);assert.equal(access.apiUnlocked,true);assert.deepEqual(preserved,old);assert.equal(coding.active,null);assert.deepEqual(career,{completed:0,byJob:{}});assert.deepEqual(projects,{active:null,completed:[]});
  advance(decoded.state,.25);
  assert.equal(decoded.state.cash,9990.52534343127);
  assert.deepEqual(decoded.state.feed,old.feed);

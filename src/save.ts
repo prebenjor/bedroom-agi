@@ -1,3 +1,4 @@
+import {createCoding,CODING_JOBS,CODING_ROLES,LONG_FORM} from './coding';
 import type {GameState} from './types';
 import {MODELS,BUSINESSES,GPUS,UPGRADES,HARNESS,PERKS,NEWS,WORKFLOWS} from './content';
 import {PROJECTS,PROJECT_BUILD_SECONDS} from './projects';
@@ -11,6 +12,31 @@ function validateAccess(s:GameState){
  if(!record(a.selectedRevisions)||Object.entries(a.selectedRevisions).some(([id,r])=>!MODELS.some(m=>m.id===id)||typeof r!=='string'||!revisionMetrics(s,id,r).available))return false;
  if(!Array.isArray(a.plans)||a.plans.length>PROVIDERS.length||new Set(a.plans.map(p=>p?.provider)).size!==a.plans.length||a.plans.filter(p=>p?.renew).length>1)return false;
  for(const p of a.plans)if(!record(p)||!PROVIDERS.includes(p.provider)||!['plus','pro'].includes(p.tier)||!bounded(p.expiresAt)||p.expiresAt<=s.calendarSeconds||p.expiresAt>s.calendarSeconds+840||typeof p.renew!=='boolean'||p.nextTier!==undefined&&(!['free','plus','pro'].includes(p.nextTier)||PLAN_FEES[p.nextTier]>PLAN_FEES[p.tier]))return false;
+ return true;
+}
+function validateCoding(s:GameState){
+ const c=s.coding,career=s.career;
+ if(!record(c)||!record(career)||!Number.isInteger(career.completed)||!bounded(career.completed)||!record(career.byJob)||Object.entries(career.byJob).some(([id,n])=>!CODING_JOBS.some(j=>j.id===id)||!Number.isInteger(n)||!bounded(n))||Object.values(career.byJob).reduce((n,x)=>n+x,0)!==career.completed)return false;
+ if(c.selected!==null&&!CODING_JOBS.some(j=>j.id===c.selected)||typeof c.recovery!=='boolean'||!record(c.roles)||!Array.isArray(c.content)||c.content.length>4||c.approvedBudget!==null&&!bounded(c.approvedBudget))return false;
+ const validAssignment=(a:any)=>record(a)&&MODELS.some(m=>m.id===a.model&&m.tier!=='visual')&&(a.revision===undefined||typeof a.revision==='string'&&revisionMetrics(s,a.model,a.revision).available)&&(a.access===undefined||['chat','api','local'].includes(a.access))&&(!a.access||a.access==='local'===!!MODELS.find(m=>m.id===a.model)!.vram);
+ if(CODING_ROLES.some(role=>c.roles[role]!==null&&!validAssignment(c.roles[role]))||Object.keys(c.roles).some(role=>!CODING_ROLES.includes(role as any)))return false;
+ if(c.lastReport!==null){const r=c.lastReport;if(!record(r)||!CODING_JOBS.some(j=>j.id===r.work)&&!LONG_FORM.includes(r.work)||['payout','fees','seconds','repairs','helpers'].some(k=>!bounded((r as any)[k]))||!Number.isInteger(r.repairs)||r.repairs>2||!Number.isInteger(r.helpers)||r.helpers>3)return false;}
+ const pipelines=[c.active,...c.content].filter(p=>p!==null);if(c.active===null&&c.content.length||new Set(pipelines.map(p=>p.id)).size!==pipelines.length||c.content.some(p=>p.kind!=='content'))return false;
+ for(const p of pipelines){
+  if(!record(p)||typeof p.id!=='string'||p.id.length>120||!['coding','content'].includes(p.kind)||(p.kind==='coding'?!CODING_JOBS.some(j=>j.id===p.work):!LONG_FORM.includes(p.work))||['payout','budget','spent','acceptedAt'].some(k=>!bounded((p as any)[k]))||p.acceptedAt>s.totalSeconds||p.spent>p.budget+1e-8||!Number.isInteger(p.repairs)||p.repairs<0||p.repairs>2||!Number.isInteger(p.helpers)||p.helpers<0||p.helpers>3||![null,'budget','parallel'].includes(p.delegation)||typeof p.pause!=='string'||p.pause.length>1200||!Array.isArray(p.requests)||!p.requests.length||p.requests.length>80)return false;
+  if(new Set(p.requests.map(r=>r.id)).size!==p.requests.length)return false;
+  for(const r of p.requests){
+   if(!record(r)||!Number.isInteger(r.id)||!bounded(r.id,1000)||!Number.isInteger(r.group)||!bounded(r.group,100)||!['Brief','Build','Review','Test','Fix','Deliver','Section','Coordinate'].includes(r.stage)||!CODING_ROLES.includes(r.role)||!validAssignment(r)||!r.access||typeof r.revision!=='string'||!['pending','running','done'].includes(r.status)||typeof r.delegated!=='boolean'||['workload','duration','cost','vram','context'].some(k=>!bounded((r as any)[k],1e12))||r.workload<=0||r.duration<=0||r.vram>96)return false;
+   if(!record(r.snapshot)||['speed','payout','fee','workload'].some(k=>!bounded((r.snapshot as any)[k],1e12))||r.snapshot.speed<=0||r.snapshot.payout<=0||r.snapshot.workload!==r.workload)return false;
+   if(r.access==='chat'&&(r.cost!==0||r.vram!==0||r.snapshot.fee!==0||r.delegated||r.stage==='Coordinate')||r.access==='local'&&r.vram===0||r.access==='api'&&r.vram!==0)return false;
+   if(r.stage==='Coordinate'&&!MODELS.find(m=>m.id===r.model)!.delegation)return false;
+   const jobs=s.jobs.filter(j=>j.pipeline===p.id&&j.request===r.id);
+   if(r.status==='running'){if(jobs.length!==1)return false;const j=jobs[0];if(j.business!==p.work||j.payout!==0||['model','revision','access','duration','cost','vram'].some(k=>(j as any)[k]!==(r as any)[k])||JSON.stringify(j.snapshot)!==JSON.stringify(r.snapshot))return false;}
+   else if(jobs.length)return false;
+  }
+  const spent=p.requests.filter(r=>r.status!=='pending').reduce((n,r)=>n+r.cost,0);if(Math.abs(spent-p.spent)>1e-7)return false;
+ }
+ if(s.jobs.some(j=>j.pipeline!==undefined&&(!pipelines.some(p=>p.id===j.pipeline&&p.requests.some(r=>r.id===j.request&&r.status==='running')))||j.pipeline===undefined&&j.request!==undefined))return false;
  return true;
 }
 export function encodeSave(state:GameState,savedAt:number){return JSON.stringify({version:1,savedAt,state});}
@@ -32,6 +58,8 @@ export function decodeSave(raw:string,now:number):{state:GameState;offlineSecond
   if(!bounded(s.calendarSeconds))return null;
   if(s.access===undefined)s.access=createAccess(true);
   if(!validateAccess(s))return null;
+  if(s.coding===undefined)s.coding=createCoding();
+  if(s.career===undefined)s.career={completed:0,byJob:{}};
   if(s.projects===undefined)s.projects={active:null,completed:[]};
   if(!s.projects||typeof s.projects!=='object'||!Array.isArray(s.projects.completed)||s.projects.completed.length>PROJECTS.length)return null;
   const validProject=(p:any,complete:boolean)=>{
@@ -45,7 +73,7 @@ export function decodeSave(raw:string,now:number):{state:GameState;offlineSecond
   if(s.event!==null&&!NEWS.some(n=>n.id===s.event))return null;
   if(!Array.isArray(s.jobs)||s.jobs.length>s.workers||new Set(s.jobs.map((j:any)=>j.worker)).size!==s.jobs.length)return null;
   for(const j of s.jobs){
-   if(!Number.isInteger(j.worker)||j.worker<0||j.worker>=s.workers||!MODELS.some(m=>m.id===j.model)||!BUSINESSES.some(b=>b.id===j.business))return null;
+   if(!Number.isInteger(j.worker)||j.worker<0||j.worker>=s.workers||!MODELS.some(m=>m.id===j.model)||(!BUSINESSES.some(b=>b.id===j.business)&&!CODING_JOBS.some(b=>b.id===j.business)))return null;
    for(const k of ['remaining','duration','payout','cost','vram'])if(!Number.isFinite(j[k])||j[k]<0||j[k]>1e12)return null;
    if(j.version!==undefined&&j.version!==1)return null;
    if(j.access!==undefined&&!['chat','api','local'].includes(j.access))return null;
@@ -60,6 +88,7 @@ export function decodeSave(raw:string,now:number):{state:GameState;offlineSecond
   const chats=s.jobs.filter((j:any)=>j.access==='chat');
   if(chats.length>1||chats.length&&s.jobs.some((j:any)=>j.access===undefined&&j.model==='starter'))return null;
   const cap=GPUS.find(g=>g.id===s.gpu)?.vram??0;if(s.jobs.reduce((n:number,j:any)=>n+j.vram,0)>cap)return null;
+  if(!validateCoding(s))return null;
   if(!Array.isArray(s.feed)||s.feed.length>30||s.feed.some((f:any)=>!Number.isFinite(f.at)||f.at<0||typeof f.text!=='string'||f.text.length>1200||!['job','news','purchase','system'].includes(f.kind)))return null;
   if(typeof s.notice!=='string'||s.notice.length>1200)return null;
   return {state:s,offlineSeconds:clockStep(envelope.savedAt,now).seconds,savedAt:envelope.savedAt};

@@ -19,8 +19,10 @@ test('all expanded catalogue choices participate in valid real job quotes',()=>{
   usable++;const jobState=structuredClone(s);jobState.model=model;jobState.business=business;
   assert.equal(dispatch(jobState,{type:'generate'}).ok,true,`${model}/${business}: start`);
   const job=jobState.jobs[0];
-  assert.deepEqual({duration:job.duration,payout:job.payout,cost:job.cost,vram:job.vram},{duration:q.duration,payout:q.payout,cost:q.cost,vram:q.vram});
-  assert.equal(job.model,model);assert.equal(job.business,business);assert.equal(jobState.cash,s.cash-q.cost);
+  const pipeline=jobState.coding.active;
+  if(pipeline){assert.equal(pipeline.payout,q.payout);assert.ok(Math.abs(pipeline.requests.reduce((n,r)=>n+r.duration,0)-q.duration)<1e-8);assert.ok(Math.abs(pipeline.requests.reduce((n,r)=>n+r.cost,0)-q.cost)<1e-8);assert.equal(job.vram,q.vram);assert.equal(jobState.cash,s.cash-job.cost);}
+  else {assert.deepEqual({duration:job.duration,payout:job.payout,cost:job.cost,vram:job.vram},{duration:q.duration,payout:q.payout,cost:q.cost,vram:q.vram});assert.equal(jobState.cash,s.cash-q.cost);}
+  assert.equal(job.model,model);assert.equal(job.business,business);
  }
  assert.ok(usable>64,'A majority of the 128 combinations must be usable with sufficient progress and VRAM');
 });
