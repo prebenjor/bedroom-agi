@@ -5,12 +5,12 @@ import type {GameState,CodingState,CodingRole,RoleAssignment,PipelineRequest,Wor
 
 export const CODING_ROLES:CodingRole[]=['coordinator','coder','tester','reviewer'];
 export const CODING_JOBS=[
- {id:'bug-fixes',name:'Bug fixes',unlock:350,completions:0,difficulty:35,context:4000,payout:100,duration:55,scale:3},
- {id:'small-scripts',name:'Small scripts',unlock:1800,completions:1,difficulty:45,context:8000,payout:240,duration:100,scale:6},
- {id:'data-imports',name:'Data imports',unlock:5500,completions:2,difficulty:55,context:16000,payout:460,duration:160,scale:10},
- {id:'websites',name:'Websites',unlock:16000,completions:4,difficulty:65,context:32000,payout:900,duration:240,scale:16},
- {id:'internal-tools',name:'Internal tools',unlock:30000,completions:6,difficulty:75,context:64000,payout:1600,duration:340,scale:24},
- {id:'repository-migrations',name:'Repository migrations',unlock:52000,completions:8,difficulty:90,context:128000,payout:2800,duration:480,scale:35}
+ {id:'bug-fixes',name:'Bug fixes',unlock:350,completions:0,difficulty:35,context:4000,payout:160,duration:55,scale:3},
+ {id:'small-scripts',name:'Small scripts',unlock:1800,completions:1,difficulty:45,context:8000,payout:550,duration:100,scale:6},
+ {id:'data-imports',name:'Data imports',unlock:5500,completions:2,difficulty:55,context:16000,payout:1300,duration:160,scale:10},
+ {id:'websites',name:'Websites',unlock:16000,completions:4,difficulty:65,context:32000,payout:3600,duration:240,scale:16},
+ {id:'internal-tools',name:'Internal tools',unlock:30000,completions:6,difficulty:75,context:64000,payout:9600,duration:340,scale:24},
+ {id:'repository-migrations',name:'Repository migrations',unlock:52000,completions:8,difficulty:90,context:128000,payout:18000,duration:480,scale:35}
 ];
 export const LONG_FORM=['ebooks','decks','video'];
 export function createCoding():CodingState{return {recovery:false,content:[],selected:null,roles:{coordinator:null,coder:null,tester:null,reviewer:null},active:null,approvedBudget:null,lastReport:null};}
