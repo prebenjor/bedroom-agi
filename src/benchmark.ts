@@ -1,8 +1,14 @@
 import {MODELS} from './content';
 import {quote,advance,dispatch,capacity,has} from './engine';
 import {calendar,weeklyProfit,planMetrics,revisionMetrics,PROVIDERS,PLAN_FEES} from './access';
-import {codingBenchmark,codingQuote} from './coding';
-import type {GameState} from './types';
+import {codingBenchmark,codingQuote,type PipelineQuote} from './coding';
+import type {GameState,Quote} from './types';
+
+export function quoteTransport(q:Quote|PipelineQuote){
+ if(!('requests' in q))return q.access??'No requests';
+ const access=[...new Set(q.requests.map(r=>r.access))];if(access.length<=1)return access[0]??'No requests';
+ return `Mixed · ${[...new Set(q.requests.map(r=>`${r.role}: ${r.access}`))].join(', ')}`;
+}
 
 export function workComparison(s:GameState,model:string){if(!s.coding.selected)return quote(s,model,s.business);const clone=structuredClone(s);clone.model=model;return codingQuote(clone);}
 export function modelCapabilityText(s:GameState,id:string){const m=MODELS.find(m=>m.id===id)!,r=revisionMetrics(s,id),context=r.contextCapacity*(s.claw&&has(s,'context')?2:1);return `Coding ${r.codingScore} · ${context.toLocaleString('en-US')} context · ${m.testing?'testing capable':'slower tests'} · ${m.delegation?'API/local delegation':'no coordination'}`;}

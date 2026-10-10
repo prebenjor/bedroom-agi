@@ -1,4 +1,4 @@
-import {createCoding,codingAction,acceptCoding,pumpPipeline,completeRequest,startContentPipeline,LONG_FORM,codingQuote,productionQuote} from './coding';
+import {createCoding,codingAction,acceptCoding,pumpPipeline,completeRequest,startContentPipeline,LONG_FORM,codingQuote,productionQuote,pipelineQuote} from './coding';
 import { MODELS, BUSINESSES, GPUS, UPGRADES, HARNESS, PERKS, NEWS, LOGS, TARGETS, FUNDING, WORKER_PRICES, WORKFLOWS, BASE_SPEED, CLAW_UNLOCK, CLAW_COST } from './content';
 import {PROJECTS,PROJECT_BUILD_SECONDS,projectBenefits,projectStatus} from './projects';
 import type {GameState,Action,Result,Quote,Feed,AccessMode} from './types';
@@ -47,13 +47,14 @@ export function chooseModel(s:GameState,business:string,freeVRAM=capacity(s)):st
  else if(s.routing==='local')available.sort((a,b)=>Number(b.m.vram>0)-Number(a.m.vram>0)||b.q.net-a.q.net);
  else available.sort((a,b)=>b.q.net-a.q.net);return available[0].m.id;
 }
-export function startJob(s:GameState,worker:number):Result {
+export function startJob(s:GameState,worker:number,pinned?:{model:string;quote:Quote}):Result {
  if(s.coding.recovery){if(s.jobs.some(j=>j.worker===worker)||worker<0||worker>=s.workers)return {ok:false,message:'Worker unavailable.'};const q=quote(s,'starter','seo',{access:'chat',revision:'original',ignoreBusy:false});const paid=startAccess(s,{model:'starter',access:'chat',revision:'original',workload:1,fee:0});if(!paid.ok)return paid;s.jobs.push({worker,model:'starter',business:'seo',remaining:q.duration,duration:q.duration,payout:q.payout,cost:0,vram:0,version:1,access:'chat',revision:'original',snapshot:q.snapshot});return {ok:true,message:'Making free slop.'};}
  if(s.coding.selected)return s.coding.active?{ok:false,message:'The current coding contract uses the production lane.'}:acceptCoding(s);
  if(s.coding.active?.kind==='coding')return {ok:false,message:'The current contract uses the production lane.'};
  if(s.jobs.some(j=>j.worker===worker)||worker<0||worker>=s.workers)return {ok:false,message:'Worker unavailable.'};
- const free=capacity(s)-s.jobs.reduce((n,j)=>n+j.vram,0);let model=chooseModel(s,s.business,free),q=quote(s,model,s.business,{ignoreBusy:false});
- if(s.claw&&has(s,'fallback')&&(!q.available||q.cost>s.cash||q.vram>free)){
+ const free=capacity(s)-s.jobs.reduce((n,j)=>n+j.vram,0);let model=pinned?.model??chooseModel(s,s.business,free),q=pinned?.quote??quote(s,model,s.business,{ignoreBusy:false});
+ if(pinned){const check=canUse(s,{model,access:q.access,revision:q.revision,workload:q.snapshot?.workload??1,fee:0,ignoreBusy:false});q={...q,available:(q.suitable??q.available)&&check.ok,reason:check.ok?q.reason:check.message};}
+ if(!pinned&&s.claw&&has(s,'fallback')&&(!q.available||q.cost>s.cash||q.vram>free)){
   const options=MODELS.map(m=>({m,q:quote(s,m.id,s.business,{ignoreBusy:false})})).filter(x=>x.q.available&&x.q.cost<=s.cash&&x.q.vram<=free).sort((a,b)=>b.q.net-a.q.net);
   if(options[0]){model=options[0].m.id;q=options[0].q;}
  }
@@ -67,11 +68,21 @@ export function startJob(s:GameState,worker:number):Result {
 }
 export function income(s:GameState){
  if(s.coding.recovery){const running=s.jobs.filter(j=>!j.pipeline&&j.model==='starter'&&j.business==='seo'),jobs=running.length?running:s.auto&&s.jobs.length<s.workers&&quote(s,'starter','seo',{access:'chat',revision:'original'}).available?previewJobs(s):[];const revenue=jobs.reduce((n,j)=>n+j.payout/j.duration,0);return {revenue,cost:0,net:revenue,workers:jobs.length,model:'starter'};}
+ if(s.jobs.length){
+  const legacy=s.jobs.filter(j=>!j.pipeline),pipelines=[s.coding.active,...s.coding.content].filter(p=>p&&s.jobs.some(j=>j.pipeline===p.id)).map(p=>pipelineQuote(s,p!));
+  const revenue=legacy.reduce((n,j)=>n+j.payout/j.duration,0)+pipelines.reduce((n,p)=>n+p.payout/p.duration,0),cost=legacy.reduce((n,j)=>n+j.cost/j.duration,0)+pipelines.reduce((n,p)=>n+p.cost/p.duration,0);
+  return {revenue,cost,net:revenue-cost,workers:s.jobs.length,model:chooseModel(s,s.business)};
+ }
  if(s.coding.selected||s.coding.active?.kind==='coding'){const q=productionQuote(s),working=!!s.coding.active||s.auto;return {revenue:working&&q.duration?q.payout/q.duration:0,cost:working&&q.duration?q.cost/q.duration:0,net:working?q.net:0,workers:s.jobs.length,model:s.model};}
  const model=chooseModel(s,s.business),q=quote(s,model,s.business);
- if(s.jobs.length){const revenue=s.jobs.reduce((n,j)=>n+j.payout/j.duration,0),cost=s.jobs.reduce((n,j)=>n+j.cost/j.duration,0);return {revenue,cost,net:revenue-cost,workers:s.jobs.length,model};}
  if(!q.available||!s.auto||q.cost>s.cash)return {revenue:0,cost:0,net:0,workers:0,model};
  const jobs=previewJobs(s),revenue=jobs.reduce((n,j)=>n+j.payout/j.duration,0),cost=jobs.reduce((n,j)=>n+j.cost/j.duration,0);return {revenue,cost,net:revenue-cost,workers:jobs.length,model};
+}
+/** A sale is a whole pipeline delivery, even when several sections run together. */
+export function nextSale(s:GameState){
+ const sales=s.jobs.filter(j=>!j.pipeline).map(j=>({remaining:j.remaining,duration:j.duration}));
+ for(const p of [s.coding.active,...s.coding.content])if(p?.kind==='content'&&s.jobs.some(j=>j.pipeline===p.id))sales.push({remaining:pipelineQuote(s,p,true).duration,duration:pipelineQuote(s,p).duration});
+ return sales.reduce<{remaining:number;duration:number}|undefined>((next,sale)=>!next||sale.remaining<next.remaining?sale:next,undefined);
 }
 export function prestigeQuote(s:GameState){
  const target=TARGETS[Math.min(2,s.prestige)]*(s.prestige>2?Math.pow(1.7,s.prestige-2):1);
@@ -156,7 +167,7 @@ export function dispatch(s:GameState,a:Action):Result {
  }
  if(!message)message=ok?'Done.':'You don’t have enough cash for that.';s.notice=message;if(ok)log(s,message,'purchase');return {ok,message};
 }
-export function advance(s:GameState,seconds:number){
+export function advance(s:GameState,seconds:number,startAutomatic:(s:GameState,worker:number)=>Result=startJob){
  if(!Number.isFinite(seconds)||seconds<=0)return;s.fraction+=seconds;
  const steps=Math.floor((s.fraction+1e-9)/STEP);s.fraction=Math.max(0,s.fraction-steps*STEP);
  for(let i=0;i<steps;i++){
@@ -185,7 +196,7 @@ export function advance(s:GameState,seconds:number){
   s.jobs=s.jobs.filter(j=>j.remaining>0);
   pumpPipeline(s);
   if(s.auto&&(!s.coding.selected||s.coding.recovery||s.claw&&s.coding.approvedBudget!==null))for(let w=0;w<s.workers;w++)if(!s.jobs.some(j=>j.worker===w)){
-   const r=startJob(s,w);if(!r.ok){if(!s.jobs.length)s.notice=r.message;break;}
+   const r=startAutomatic(s,w);if(!r.ok){if(!s.jobs.length)s.notice=r.message;break;}
   }
  }
 }

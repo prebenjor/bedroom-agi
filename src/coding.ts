@@ -48,9 +48,9 @@ function request(s:GameState,a:RoleAssignment,stage:PipelineRequest['stage'],rol
  return {id:0,stage,role,group,model:a.model,revision:rev.id,access:base.access!,duration:seconds,cost,workload,vram:base.vram,snapshot:{...base.snapshot!,fee:model.cost?cost/(model.cost*workload):cost,workload},status:'pending',delegated:false,context};
 }
 export interface PipelineQuote extends Quote {requests:PipelineRequest[];repairs:number;estimatedFees:number;quota:Record<string,number>;workers:number;context:number}
-function summarize(s:GameState,requests:PipelineRequest[],payout:number,repairs:number,reason='',context=0):PipelineQuote{
+function summarize(s:GameState,requests:PipelineRequest[],payout:number,repairs:number,reason='',context=0,pipeline=s.coding.active?.id):PipelineQuote{
  const pending=requests.filter(r=>r.status==='pending'),cost=pending.reduce((n,r)=>n+r.cost,0),groups=[...new Set(requests.filter(r=>r.status!=='done').map(r=>r.group))];
- const duration=groups.reduce((n,g)=>n+Math.max(...requests.filter(r=>r.group===g&&r.status!=='done').map(r=>r.status==='running'?(s.jobs.find(j=>j.request===r.id&&j.pipeline===s.coding.active?.id)?.remaining??r.duration):r.duration)),0);
+ const duration=groups.reduce((n,g)=>n+Math.max(...requests.filter(r=>r.group===g&&r.status!=='done').map(r=>r.status==='running'?(s.jobs.find(j=>j.request===r.id&&j.pipeline===pipeline)?.remaining??r.duration):r.duration)),0);
  const quota:Record<string,number>={};for(const r of pending)if(r.access==='chat'&&r.model!=='starter')quota[r.model]=(quota[r.model]??0)+r.workload*tierWeight(r.model);
  const workers=Math.max(1,...groups.map(g=>requests.filter(r=>r.group===g&&r.status!=='done').length));
  const vram=Math.max(0,...groups.map(g=>requests.filter(r=>r.group===g&&r.status!=='done').reduce((n,r)=>n+r.vram,0)));
@@ -80,9 +80,10 @@ export function codingQuote(s:GameState,id=s.coding.selected??'bug-fixes'):Pipel
  return {...summarize(s,requests,job.payout*base.snapshot!.payout,repairs,reason,job.context),quantized:base.quantized};
 }
 /** Full committed contract economics. Progress never inflates its income rate. */
-export function productionQuote(s:GameState):Quote|PipelineQuote{const p=s.coding.active;return p?{...summarize(s,p.requests.map(r=>({...r,status:'pending'})),p.payout,p.repairs),quantized:p.quantized??false}:s.coding.selected?codingQuote(s):quote(s,s.model,s.business);}
+export function pipelineQuote(s:GameState,p:WorkPipeline,remaining=false):PipelineQuote{return {...summarize(s,remaining?p.requests:p.requests.map(r=>({...r,status:'pending'})),p.payout,p.repairs,remaining?p.pause:'',0,p.id),quantized:p.quantized??false};}
+export function productionQuote(s:GameState):Quote|PipelineQuote{const p=s.coding.active;return p?pipelineQuote(s,p):s.coding.selected?codingQuote(s):quote(s,s.model,s.business);}
 /** Remaining work/cash only; never use this for sustainable income or upgrade ROI. */
-export function remainingQuote(s:GameState):PipelineQuote|null{const p=s.coding.active;return p?summarize(s,p.requests,p.payout,p.repairs,p.pause):null;}
+export function remainingQuote(s:GameState):PipelineQuote|null{const p=s.coding.active;return p?pipelineQuote(s,p,true):null;}
 function makePipeline(s:GameState,kind:'coding'|'content',work:string,q:PipelineQuote,budget:number):WorkPipeline{return {id:`${kind}-${s.totalSeconds}-${s.totalSlop}`,kind,work,payout:q.payout,quantized:q.quantized,requests:structuredClone(q.requests),budget,spent:0,repairs:q.repairs,helpers:0,delegation:null,pause:'',acceptedAt:s.totalSeconds};}
 export function acceptCoding(s:GameState,budget?:number):Result{
  if(!s.coding.selected)return result(false,'Select a coding contract first.');
@@ -104,7 +105,7 @@ function pumpOne(s:GameState,p:WorkPipeline){
   s.cash+=p.payout;s.runEarned+=p.payout;s.totalEarned+=p.payout;s.slop++;s.totalSlop++;
   if(p.kind==='coding'){s.career.completed++;s.career.byJob[p.work]=(s.career.byJob[p.work]??0)+1;}
   s.coding.lastReport={work:p.work,payout:p.payout,fees:p.spent,repairs:p.repairs,helpers:p.helpers,seconds:s.totalSeconds-p.acceptedAt};
-  log(s,`Delivered ${p.work}: ${p.repairs} repairs, $${p.spent.toFixed(2)} request fees, ${p.helpers} helpers.`,'job');if(s.coding.active===p)s.coding.active=s.coding.content.shift()??null;else s.coding.content=s.coding.content.filter(x=>x!==p);return;
+  log(s,`Delivered ${p.work}: ${p.repairs} repairs, $${p.spent.toFixed(2)} request fees, ${p.helpers} helpers.`,'job');if(s.coding.active===p)s.coding.active=s.coding.content.shift()??null;else s.coding.content=s.coding.content.filter(x=>x!==p);if(!s.coding.active&&!s.coding.content.length)s.coding.recovery=false;return;
  }
  if(s.coding.recovery){p.pause='Making free slop. Resume with pending access or budget approval.';return;}
  const group=Math.min(...p.requests.filter(r=>r.status!=='done').map(r=>r.group));p.pause='';

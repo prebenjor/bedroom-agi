@@ -1,4 +1,5 @@
-import {MODELS,GPUS} from './content';
+import {MODELS} from './content';
+import {advance,startJob} from './engine';
 import type {GameState,AccessState,AccessMode,Provider,PlanTier,Result,Quote,Job} from './types';
 export const HOUR_SECONDS=5,DAY_SECONDS=120,WEEK_SECONDS=840,API_UNLOCK=350;
 export const PROVIDERS:Provider[]=['OpenAI','Anthropic','Google','xAI','DeepSeek'];
@@ -85,25 +86,30 @@ export function advanceAccess(s:GameState,seconds:number){
  s.access.plans=s.access.plans.filter(p=>p.expiresAt>s.calendarSeconds);
 }
 // Simulate access and cash timing while keeping the selected quote constant.
-// Existing committed work can finish; no future news, heat or routing changes are assumed.
+// Commitments use the real scheduler; new compared work keeps frozen economics.
 export function weeklyProfit(s:GameState,q:Quote,model:string){
- const forecast=structuredClone(s),horizonSeconds=calendar(s).resetIn,route=modelAccess(s,model,q.access);
- const fresh=new Set<Job>(),step=.25,workload=q.snapshot?.workload??(q.workload??tierWeight(model))/tierWeight(model);
- let jobs=0,jobsStarted=0,committedJobs=0,revenue=0,committedRevenue=0,usageFees=0,fee=0;
+ const forecast=structuredClone(s),horizonSeconds=calendar(s).resetIn,route=modelAccess(s,model,q.access),step=.25;
+ forecast.auto=true;forecast.nextEvent=1e15;forecast.coding.approvedBudget=null;
+ const committedPipelines=[forecast.coding.active,...forecast.coding.content].filter(p=>p!==null),committedRaw=forecast.jobs.filter(j=>!j.pipeline),paid=forecast.expenses;
+ const fresh=new Set<Job>(),freshPipelines=new Set<string>();
+ let jobs=0,jobsStarted=0,committedJobs=0,revenue=0,committedRevenue=0,usageFees=0;
+ const startCompared=(state:GameState,worker:number):Result=>{
+  if(state.coding.recovery)return {ok:false,message:'Committed work is paused for recovery.'};
+  const prior=new Set(state.jobs),before=state.expenses,started=startJob(state,worker,{model,quote:q});
+  if(started.ok){usageFees+=state.expenses-before;jobsStarted++;for(const job of state.jobs)if(!prior.has(job)){if(job.pipeline)freshPipelines.add(job.pipeline);else fresh.add(job);}}
+  return started;
+ };
  for(let elapsed=0;elapsed<horizonSeconds;){
-  const dt=Math.min(step,horizonSeconds-elapsed),before=forecast.expenses;advanceAccess(forecast,dt);fee+=forecast.expenses-before;elapsed+=dt;
-  for(const job of forecast.jobs){job.remaining-=dt;if(job.remaining<=0){forecast.cash+=job.payout;revenue+=job.payout;if(fresh.has(job))jobs++;else {committedJobs++;committedRevenue+=job.payout;}}}
-  forecast.jobs=forecast.jobs.filter(job=>job.remaining>0);
-  if(!(q.suitable??q.available)||!Number.isFinite(q.duration)||q.duration<=0)continue;
-  for(let worker=0;worker<forecast.workers;worker++){
-   if(forecast.jobs.some(job=>job.worker===worker))continue;
-   const freeVRAM=(GPUS.find(g=>g.id===forecast.gpu)?.vram??0)-forecast.jobs.reduce((n,j)=>n+j.vram,0);
-   if(q.vram>freeVRAM)break;
-   const reserved=startAccess(forecast,{model,access:route,revision:q.revision,workload,fee:q.cost});if(!reserved.ok)break;
-   const job:Job={worker,model,business:s.business,remaining:q.duration,duration:q.duration,payout:q.payout,cost:q.cost,vram:q.vram,access:route,revision:q.revision,snapshot:q.snapshot};
-   forecast.jobs.push(job);fresh.add(job);jobsStarted++;usageFees+=q.cost;
-  }
+  const dt=Math.min(step,horizonSeconds-elapsed),pipelines=[forecast.coding.active,...forecast.coding.content].filter(p=>p!==null),spent=pipelines.reduce((n,p)=>n+(freshPipelines.has(p.id)?p.spent:0),0);
+  advance(forecast,dt,startCompared);elapsed+=dt;
+  usageFees+=pipelines.reduce((n,p)=>n+(freshPipelines.has(p.id)?p.spent:0),0)-spent;
+  for(const job of fresh)if(job.remaining<=0){jobs++;revenue+=job.payout;fresh.delete(job);}
+  for(const p of pipelines)if(freshPipelines.has(p.id)&&p.requests.every(r=>r.status==='done')){jobs++;revenue+=p.payout;freshPipelines.delete(p.id);}
  }
+ for(const job of committedRaw)if(job.remaining<=0){committedJobs++;committedRevenue+=job.payout;}
+ for(const p of committedPipelines)if(p.requests.every(r=>r.status==='done')){committedJobs++;committedRevenue+=p.payout;}
+ const committedFees=committedPipelines.reduce((n,p)=>n+p.spent,0)-[s.coding.active,...s.coding.content].reduce((n,p)=>n+(p?.spent??0),0),fee=Math.max(0,forecast.expenses-paid-usageFees-committedFees);
+ revenue+=committedRevenue;
  const m=MODELS.find(m=>m.id===model),weeklyFee=route==='chat'&&m&&PROVIDERS.includes(m.company as Provider)?planMetrics(s,m.company as Provider).fee:0;
  return {period:'remaining-week' as const,assumption:'constant-quote' as const,timeStepSeconds:step,horizonSeconds,jobs,jobsStarted,committedJobs,committedRevenue,fee,weeklyFee,revenue,usageFees,profit:revenue-usageFees-fee,cashChange:forecast.cash-s.cash,resetIn:horizonSeconds};
 }
