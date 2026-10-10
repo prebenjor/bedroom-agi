@@ -66,6 +66,7 @@ export function startJob(s:GameState,worker:number):Result {
  return {ok:true,message:'On it.'};
 }
 export function income(s:GameState){
+ if(s.coding.recovery){const running=s.jobs.filter(j=>!j.pipeline&&j.model==='starter'&&j.business==='seo'),jobs=running.length?running:s.auto&&s.jobs.length<s.workers&&quote(s,'starter','seo',{access:'chat',revision:'original'}).available?previewJobs(s):[];const revenue=jobs.reduce((n,j)=>n+j.payout/j.duration,0);return {revenue,cost:0,net:revenue,workers:jobs.length,model:'starter'};}
  if(s.coding.selected||s.coding.active?.kind==='coding'){const q=productionQuote(s),working=!!s.coding.active||s.auto;return {revenue:working&&q.duration?q.payout/q.duration:0,cost:working&&q.duration?q.cost/q.duration:0,net:working?q.net:0,workers:s.jobs.length,model:s.model};}
  const model=chooseModel(s,s.business),q=quote(s,model,s.business);
  if(s.jobs.length){const revenue=s.jobs.reduce((n,j)=>n+j.payout/j.duration,0),cost=s.jobs.reduce((n,j)=>n+j.cost/j.duration,0);return {revenue,cost,net:revenue-cost,workers:s.jobs.length,model};}

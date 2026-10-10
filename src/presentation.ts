@@ -25,6 +25,7 @@ function nextSetup(s:GameState,freeVRAM=capacity(s)){
 }
 
 export function productionStatus(s:GameState):ProductionStatus {
+ if(s.coding.recovery){const q=quote(s,'starter','seo',{access:'chat',revision:'original'}),occupied=s.jobs.length;return {model:'starter',quote:q,kind:occupied?(s.auto?'automatic-running':'manual-running'):q.available?(s.auto?'automatic-running':'manual-ready'):'paused',reason:q.reason||'The contract is paused. Free articles rebuild cash.',recoverable:!q.available&&!occupied};}
  if(s.coding.selected||s.coding.active?.kind==='coding'){const status=codingStatus(s),q=productionQuote(s),running=s.jobs.some(j=>j.pipeline===s.coding.active?.id);return {model:s.coding.active?.requests.find(r=>r.status!=='done')?.model??s.model,quote:q,kind:running?(s.auto?'automatic-running':'manual-running'):status.reason||!q.available?'paused':s.auto?'automatic-running':'manual-ready',reason:status.reason||q.reason||`${status.stage??'Contract'} ready.`,recoverable:!!status.reason||!q.available};}
  const freeVRAM=capacity(s)-s.jobs.reduce((sum,j)=>sum+j.vram,0),next=nextSetup(s,freeVRAM);
  const occupied=s.jobs.length,hasFreeWorker=occupied<s.workers;
@@ -37,7 +38,7 @@ export function productionStatus(s:GameState):ProductionStatus {
 }
 
 export function projectedIncome(s:GameState){
- if(s.coding.selected){const q=codingQuote(s);return {net:q.available?q.net:0,revenue:q.available?q.payout/q.duration:0,cost:q.available?q.cost/q.duration:0,slots:q.available?1:0,model:s.coding.roles.coder?.model??s.model};}
+ if(s.coding.selected&&!s.coding.recovery){const q=codingQuote(s);return {net:q.available?q.net:0,revenue:q.available?q.payout/q.duration:0,cost:q.available?q.cost/q.duration:0,slots:q.available?1:0,model:s.coding.roles.coder?.model??s.model};}
  const jobs=previewJobs(s),model=jobs[0]?.model??nextSetup({...s,jobs:[]}).model;
  const revenue=jobs.reduce((n,j)=>n+j.payout/j.duration,0),cost=jobs.reduce((n,j)=>n+j.cost/j.duration,0);
  return {net:revenue-cost,revenue,cost,slots:jobs.length,model};

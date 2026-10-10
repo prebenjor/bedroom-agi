@@ -4,6 +4,20 @@ import {createGame,dispatch,quote,advance,income} from '../src/engine';
 import {productionStatus,projectedIncome,suggestedUpgrades,modelPreview,upgradePreview} from '../src/presentation';
 import * as presentation from '../src/presentation';
 
+test('paused manual coding exposes a real free recovery quote and rate',()=>{
+ const s=createGame();Object.assign(s,{cash:.7,runEarned:1000,totalSeconds:360,model:'gpt',workers:4});
+ dispatch(s,{type:'code-select',id:'bug-fixes'});assert.equal(dispatch(s,{type:'code-accept'}).ok,true);advance(s,100);
+ assert.ok(s.coding.active?.pause);const accepted=structuredClone(s.coding.active),spent=s.expenses;
+ assert.equal(dispatch(s,{type:'free-slop'}).ok,true);
+ const status=productionStatus(s),projection=projectedIncome(s);
+ assert.equal(status.model,'starter');assert.equal(status.quote.cost,0);assert.equal(status.quote.access,'chat');assert.equal(status.kind,'manual-ready');
+ assert.equal(projection.model,'starter');assert.equal(projection.slots,1);assert.equal(projection.cost,0);assert.equal(income(s).net,0);
+ assert.equal(dispatch(s,{type:'generate'}).ok,true);
+ const free=s.jobs.find(j=>j.model==='starter')!;assert.equal(income(s).net,free.payout/free.duration);assert.equal(income(s).cost,0);
+ assert.equal(s.expenses,spent);assert.deepEqual(s.coding.active?.requests,accepted.requests);
+ advance(s,10);assert.ok(s.cash>=7);assert.equal(s.coding.active?.id,accepted.id);
+});
+
 test('purchase recommendations expose relevant workflow savings and a timed goal without mutation',()=>{
  const s=createGame();Object.assign(s,{cash:1000,runEarned:100000,model:'gpt',business:'reviews',auto:true});
  const before=structuredClone(s),api=presentation;
